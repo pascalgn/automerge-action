@@ -7,7 +7,7 @@ const { ArgumentParser } = require("argparse");
 const Octokit = require("@octokit/rest");
 
 const { ClientError, NeutralExitError, logger } = require("../lib/common");
-const { updateLocalInvocation, updateGitHubAction } = require("../lib/api");
+const { executeLocally, executeGitHubAction } = require("../lib/api");
 
 const package = require("../package.json");
 
@@ -51,7 +51,7 @@ async function main() {
   });
 
   if (args.url) {
-    await updateLocalInvocation(octokit, args.url, GITHUB_TOKEN);
+    await executeLocally(octokit, args.url, GITHUB_TOKEN);
   } else {
     const GITHUB_EVENT_PATH = process.env.GITHUB_EVENT_PATH;
     if (!GITHUB_EVENT_PATH) {
@@ -61,7 +61,7 @@ async function main() {
     const eventDataStr = await readFile(GITHUB_EVENT_PATH);
     const eventData = JSON.parse(eventDataStr);
 
-    await updateGitHubAction(octokit, GITHUB_TOKEN, eventData);
+    await executeGitHubAction(octokit, GITHUB_TOKEN, eventData);
   }
 }
 
