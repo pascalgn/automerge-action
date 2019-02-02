@@ -1,0 +1,21 @@
+{
+  "name": "automerge-action",
+  "version": "0.0.1",
+  "description": "GitHub action to automatically merge pull requests",
+  "main": "lib/api.js",
+  "author": "Pascal",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "test": "jest"
+  },
+  "dependencies": {
+    "@octokit/rest": "^16.13.4",
+    "argparse": "^1.0.7",
+    "fs-extra": "^7.0.1",
+    "tmp": "^0.0.33"
+  },
+  "devDependencies": {
+    "jest": "^24.0.0"
+  }
+}
