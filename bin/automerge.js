@@ -7,7 +7,7 @@ const { ArgumentParser } = require("argparse");
 const Octokit = require("@octokit/rest");
 
 const { ClientError, NeutralExitError, logger } = require("../lib/common");
-const { updateLocalInvocation } = require("../lib/api");
+const { updateLocalInvocation, updateGitHubAction } = require("../lib/api");
 
 const package = require("../package.json");
 
@@ -42,11 +42,12 @@ async function main() {
 
   const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
   if (!GITHUB_TOKEN) {
-    throw new ClientError("Environment variable GITHUB_TOKEN not set!");
+    throw new ClientError("environment variable GITHUB_TOKEN not set!");
   }
 
   const octokit = new Octokit({
-    auth: `token ${GITHUB_TOKEN}`
+    auth: `token ${GITHUB_TOKEN}`,
+    userAgent: "pascalgn/automerge-action"
   });
 
   if (args.url) {
@@ -54,34 +55,13 @@ async function main() {
   } else {
     const GITHUB_EVENT_PATH = process.env.GITHUB_EVENT_PATH;
     if (!GITHUB_EVENT_PATH) {
-      throw new ClientError("Environment variable GITHUB_EVENT_PATH not set!");
+      throw new ClientError("environment variable GITHUB_EVENT_PATH not set!");
     }
 
     const eventDataStr = await readFile(GITHUB_EVENT_PATH);
     const eventData = JSON.parse(eventDataStr);
 
-    if (!eventData.pull_request) {
-      throw new NeutralExitError();
-    }
-
-    if (!eventData || !eventData.pull_request || !eventData.pull_request.head) {
-      throw new ClientError(
-        `Invalid GITHUB_EVENT_PATH contents: ${eventDataStr}`
-      );
-    }
-
-    const pullRequestId = {
-      owner: eventData.pull_request.head.repo.owner.login,
-      repo: eventData.pull_request.head.repo.name,
-      number: eventData.pull_request.number
-    };
-
-    const pullRequestDiff = await octokit.pulls.get({
-      ...pullRequestId,
-      headers: {
-        accept: "application/vnd.github.v3.diff"
-      }
-    });
+    await updateGitHubAction(octokit, GITHUB_TOKEN, eventData);
   }
 }
 
