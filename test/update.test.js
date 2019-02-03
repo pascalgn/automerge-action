@@ -19,21 +19,3 @@ test("update will only change branches from the same repository", async () => {
     new NeutralExitError()
   );
 });
-
-test("earliestDate will return null", () => {
-  expect(earliestDate()).toBe(null);
-});
-
-test("earliestDate will return earliest date", () => {
-  const commits = [
-    {
-      sha: "2b3c4d00",
-      committer: { name: "GitHub", date: "2018-11-08T15:56:43Z" }
-    },
-    {
-      sha: "9b3c4d00",
-      committer: { name: "GitHub", date: "2018-11-08T15:56:02Z" }
-    }
-  ];
-  expect(earliestDate(commits)).toBe("2018-11-08T15:56:02Z");
-});
