@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-const fs = require("fs");
 const process = require("process");
 
+const fse = require("fs-extra");
 const { ArgumentParser } = require("argparse");
 const Octokit = require("@octokit/rest");
 
@@ -53,7 +53,7 @@ async function main() {
     const eventPath = env("GITHUB_EVENT_PATH");
     const eventName = env("GITHUB_EVENT_NAME");
 
-    const eventDataStr = await readFile(eventPath);
+    const eventDataStr = await fse.readFile(eventPath, "utf8");
     const eventData = JSON.parse(eventDataStr);
 
     await executeGitHubAction(octokit, token, eventName, eventData);
