@@ -40,29 +40,32 @@ async function main() {
     logger.level = "debug";
   }
 
-  const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-  if (!GITHUB_TOKEN) {
-    throw new ClientError("environment variable GITHUB_TOKEN not set!");
-  }
+  const token = env("GITHUB_TOKEN");
 
   const octokit = new Octokit({
-    auth: `token ${GITHUB_TOKEN}`,
+    auth: `token ${token}`,
     userAgent: "pascalgn/automerge-action"
   });
 
   if (args.url) {
-    await executeLocally(octokit, args.url, GITHUB_TOKEN);
+    await executeLocally(octokit, args.url, token);
   } else {
-    const GITHUB_EVENT_PATH = process.env.GITHUB_EVENT_PATH;
-    if (!GITHUB_EVENT_PATH) {
-      throw new ClientError("environment variable GITHUB_EVENT_PATH not set!");
-    }
+    const eventPath = env("GITHUB_EVENT_PATH");
+    const eventName = env("GITHUB_EVENT_NAME");
 
-    const eventDataStr = await readFile(GITHUB_EVENT_PATH);
+    const eventDataStr = await readFile(eventPath);
     const eventData = JSON.parse(eventDataStr);
 
-    await executeGitHubAction(octokit, GITHUB_TOKEN, eventData);
+    await executeGitHubAction(octokit, token, eventName, eventData);
   }
+}
+
+function env(name) {
+  const val = process.env[name];
+  if (!val || !val.length) {
+    throw new ClientError(`environment variable ${name} not set!`);
+  }
+  return val;
 }
 
 if (require.main === module) {
@@ -71,7 +74,7 @@ if (require.main === module) {
       process.exitCode = 78;
     } else if (e instanceof ClientError) {
       process.exitCode = 2;
-      logger.error(e.message);
+      logger.error(e);
     } else {
       process.exitCode = 1;
       logger.error(e);
