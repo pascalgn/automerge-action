@@ -5,6 +5,8 @@ LABEL "com.github.actions.description"="Automatically merge pull requests that a
 LABEL "com.github.actions.icon"="git-pull-request"
 LABEL "com.github.actions.color"="blue"
 
+RUN apk add --no-cache git openssl
+
 COPY . /tmp/src/
 
 RUN yarn global add "file:/tmp/src" && rm -rf /tmp/src
