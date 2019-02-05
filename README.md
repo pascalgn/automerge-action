@@ -1,5 +1,7 @@
 # automerge-action
 
+[![GitHubActions](https://img.shields.io/badge/listed%20on-GitHubActions-blue.svg)](https://github-actions.netlify.com/automerge)
+
 GitHub action to automatically merge pull requests that are ready.
 
 This action will behave differently based on the labels assigned to a pull request:
