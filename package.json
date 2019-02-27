@@ -10,7 +10,8 @@
     "automerge-action": "./bin/automerge.js"
   },
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "lint": "eslint ."
   },
   "dependencies": {
     "@octokit/rest": "^16.13.4",
@@ -19,6 +20,8 @@
     "tmp": "^0.0.33"
   },
   "devDependencies": {
+    "eslint": "^5.14.1",
+    "eslint-plugin-jest": "^22.3.0",
     "jest": "^24.0.0"
   }
 }

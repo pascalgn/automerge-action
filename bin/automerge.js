@@ -9,14 +9,14 @@ const Octokit = require("@octokit/rest");
 const { ClientError, NeutralExitError, logger } = require("../lib/common");
 const { executeLocally, executeGitHubAction } = require("../lib/api");
 
-const package = require("../package.json");
+const pkg = require("../package.json");
 
 async function main() {
   const parser = new ArgumentParser({
-    prog: package.name,
-    version: package.version,
+    prog: pkg.name,
+    version: pkg.version,
     addHelp: true,
-    description: package.description
+    description: pkg.description
   });
   parser.addArgument(["-t", "--trace"], {
     action: "storeTrue",
@@ -47,8 +47,15 @@ async function main() {
     userAgent: "pascalgn/automerge-action"
   });
 
+  const labels = parseLabels(process.env.LABELS);
+  const config = { labels };
+
+  logger.debug("Configuration:", config);
+
+  const context = { token, octokit, config };
+
   if (args.url) {
-    await executeLocally(octokit, args.url, token);
+    await executeLocally(context, args.url);
   } else {
     const eventPath = env("GITHUB_EVENT_PATH");
     const eventName = env("GITHUB_EVENT_NAME");
@@ -56,7 +63,7 @@ async function main() {
     const eventDataStr = await fse.readFile(eventPath, "utf8");
     const eventData = JSON.parse(eventDataStr);
 
-    await executeGitHubAction(octokit, token, eventName, eventData);
+    await executeGitHubAction(context, eventName, eventData);
   }
 }
 
@@ -66,6 +73,21 @@ function env(name) {
     throw new ClientError(`environment variable ${name} not set!`);
   }
   return val;
+}
+
+function parseLabels(str) {
+  const labels = {
+    required: [],
+    blocking: []
+  };
+  if (str) {
+    const arr = str.split(",").map(s => s.trim());
+    labels.required = arr.filter(s => !s.startsWith("!"));
+    labels.blocking = arr
+      .filter(s => s.startsWith("!") && s.length > 1)
+      .map(s => s.substr(1));
+  }
+  return labels;
 }
 
 if (require.main === module) {

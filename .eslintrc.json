@@ -1,0 +1,18 @@
+{
+  "parserOptions": {
+    "ecmaVersion": 2017,
+    "sourceType": "module"
+  },
+  "extends": ["eslint:recommended"],
+  "plugins": ["jest"],
+  "env": {
+    "node": true,
+    "es6": true,
+    "jest/globals": true
+  },
+  "rules": {
+    "semi": "error",
+    "no-tabs": "error",
+    "no-console": "off"
+  }
+}
