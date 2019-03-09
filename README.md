@@ -47,7 +47,7 @@ workflow "automerge pull requests on status updates" {
 }
 
 action "automerge" {
-  uses = "pascalgn/automerge-action@1bd3a5084a8353b5410dc3d460032b373687c035"
+  uses = "pascalgn/automerge-action@b9f95ee2a19d9674568001d59e7500002f074fd8"
   secrets = ["GITHUB_TOKEN"]
 }
 ```
