@@ -92,6 +92,9 @@ The following environment variables are supported:
   will then be executed as the specified user. The token should be kept secret,
   so make sure to add it as secret, not as environment variable, in the GitHub
   workflow file.
+- `MERGE_METHOD`: Specify which method to use when merging the pull request
+  into the base branch. The default is `merge`, other possible values
+  are `squash` or `rebase`.
 
 You can configure the environment variables in the workflow file like this:
 
@@ -103,6 +106,7 @@ action "automerge" {
     LABELS = "!wip,!work in progress,documentation-updated"
     AUTOMERGE = "ready-to-merge"
     AUTOREBASE = "ready-to-rebase-and-merge"
+    MERGE_METHOD = "squash"
   }
 }
 ```
