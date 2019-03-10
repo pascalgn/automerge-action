@@ -1,6 +1,8 @@
 # automerge-action
 
-GitHub action to automatically merge pull requests that are ready.
+GitHub action to automatically merge pull requests when they are ready.
+
+<img src="https://pascalgn.github.io/automerge-action/screenshot.svg" width="100%">
 
 This action will behave differently based on the labels assigned to a pull
 request:
