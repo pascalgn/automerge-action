@@ -15,7 +15,8 @@ request:
   request will be rebased onto the base branch. When the PR is ready, it will
   automatically be merged (with a merge commit) into the base branch.
 - pull requests without one of these labels will be ignored
-- These labels are configurable. See [Configuration](#configuration).
+
+These labels are configurable, see [Configuration](#configuration).
 
 A pull request is considered ready when:
 
@@ -50,7 +51,7 @@ workflow "automerge pull requests on status updates" {
 }
 
 action "automerge" {
-  uses = "pascalgn/automerge-action@aaebfffa7a709db0565c599d1c317fc8eea045b4"
+  uses = "pascalgn/automerge-action@88946e3839502862e5fdad007daa5ec524145a5d"
   secrets = ["GITHUB_TOKEN"]
 }
 ```
@@ -69,12 +70,16 @@ The following environment variables are supported:
   requests _without_ the label `documentation-updated` will not be merged.
   Blocking labels take precedence, so if a pull request has both labels
   `wip` and `documentation-updated`, it will not be merged.
-
-- `AUTOMERGE`: A label which will trigger of automerge action.
-  If it is empty string or undefined, default label `automerge` is used.
-
-- `AUTOREBASE`: A label which will trigger of autorebase action.
-  If it is empty string or undefined, default label `autorebase` is used.
+- `AUTOMERGE`: The label that indicates that the pull request will be merged
+  using the default
+  [Merge pull request](https://help.github.com/en/articles/about-pull-request-merges)
+  option. When the environment variable is not set, the default label
+  `automerge` will be used.
+- `AUTOREBASE`: The label that indicates that the pull request will be merged
+  using the
+  [Rebase and merge](https://help.github.com/en/articles/about-pull-request-merges#rebase-and-merge-your-pull-request-commits)
+  option, except this option will create a merge commit. When the
+  environment variable is not set, the default label `autorebase` will be used.
 
 You can configure the environment variables in the workflow file like this:
 
@@ -83,8 +88,9 @@ action "automerge" {
   uses = ...
   secrets = ["GITHUB_TOKEN"]
   env = {
-    LABELS = "!wip,!work in progress,documentation-updated"
-    AUTOMERGE = "ready-to-merge"
+    LABELS = "!wip,!work in progress,documentation-updated",
+    AUTOMERGE = "ready-to-merge",
+    AUTOREBASE = "ready-to-rebase-and-merge"
   }
 }
 ```
