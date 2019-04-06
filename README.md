@@ -80,6 +80,14 @@ The following environment variables are supported:
   [Rebase and merge](https://help.github.com/en/articles/about-pull-request-merges#rebase-and-merge-your-pull-request-commits)
   option, except this option will create a merge commit. When the
   environment variable is not set, the default label `autorebase` will be used.
+- `TOKEN`: In some cases it can be useful to run this action as a certain user
+  (by default, it will run as `github-actions`). To use this setting, you need
+  to create a [personal access token](https://help.github.com/en/articles/creating-a-personal-access-token-for-the-command-line)
+  for the user (make sure to check `public_repo` when it's a public repository
+  or `repo` when it's a private repository). All API requests (merge/rebase)
+  will then be executed as the specified user. This option can be useful if you
+  want to use the _Restrict who can push to matching branches_ option in the
+  branch protection rules.
 
 You can configure the environment variables in the workflow file like this:
 

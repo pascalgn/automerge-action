@@ -40,7 +40,7 @@ async function main() {
     logger.level = "debug";
   }
 
-  const token = env("GITHUB_TOKEN");
+  const token = process.env.TOKEN || env("GITHUB_TOKEN");
 
   const octokit = new Octokit({
     auth: `token ${token}`,
