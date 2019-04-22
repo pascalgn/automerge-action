@@ -13,7 +13,7 @@ request:
   is ready, it will automatically be merged.
 - `autorebase` means that when changes happen in the base branch, the pull
   request will be rebased onto the base branch. When the PR is ready, it will
-  automatically be merged (with a merge commit) into the base branch.
+  automatically be merged into the base branch.
 - pull requests without one of these labels will be ignored
 
 These labels are configurable, see [Configuration](#configuration).
@@ -51,7 +51,7 @@ workflow "automerge pull requests on status updates" {
 }
 
 action "automerge" {
-  uses = "pascalgn/automerge-action@0e9c0d4a33f0def0a9f2fa6a30b94275b056173f"
+  uses = "pascalgn/automerge-action@1be5a01e5da4af7ee6c5f79c027602c56b18e30a"
   secrets = ["GITHUB_TOKEN"]
 }
 ```
