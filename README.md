@@ -71,15 +71,20 @@ The following environment variables are supported:
   Blocking labels take precedence, so if a pull request has both labels
   `wip` and `documentation-updated`, it will not be merged.
 - `AUTOMERGE`: The label that indicates that the pull request will be merged
-  using the default
-  [Merge pull request](https://help.github.com/en/articles/about-pull-request-merges)
-  option. When the environment variable is not set, the default label
-  `automerge` will be used.
-- `AUTOREBASE`: The label that indicates that the pull request will be merged
-  using the
-  [Rebase and merge](https://help.github.com/en/articles/about-pull-request-merges#rebase-and-merge-your-pull-request-commits)
-  option, except this option will create a merge commit. When the
-  environment variable is not set, the default label `autorebase` will be used.
+  using the configured merge method (see `MERGE_METHOD`). When the environment
+  variable is not set, the default label `automerge` will be used.
+- `AUTOREBASE`: The label that indicates that the pull request will be rebased
+  onto the base branch whenever this pull request is updated. When the pull
+  request is ready, it will be merged using the configured merge method (see
+  `MERGE_METHOD`). When the environment variable is not set, the default label
+  `autorebase` will be used.
+- `MERGE_METHOD`: Specify which method to use when merging the pull request
+  into the base branch. Possible values are
+  [`merge`](https://help.github.com/en/articles/about-pull-request-merges) (create a merge commit),
+  [`rebase`](https://help.github.com/en/articles/about-pull-request-merges#rebase-and-merge-your-pull-request-commits)
+  (rebase all commits of the branch onto the base branch)
+  or [`squash`](https://help.github.com/en/articles/about-pull-request-merges#squash-and-merge-your-pull-request-commits)
+  (squash all commits into a single commit). The default option is `merge`.
 - `TOKEN`: In some cases it can be useful to run this action as a certain user
   (by default, it will run as `github-actions`). This can be useful if you want
   to use the _Restrict who can push to matching branches_ option in the branch
@@ -92,9 +97,6 @@ The following environment variables are supported:
   will then be executed as the specified user. The token should be kept secret,
   so make sure to add it as secret, not as environment variable, in the GitHub
   workflow file.
-- `MERGE_METHOD`: Specify which method to use when merging the pull request
-  into the base branch. The default is `merge`, other possible values
-  are `squash` or `rebase`.
 
 You can configure the environment variables in the workflow file like this:
 
