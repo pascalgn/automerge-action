@@ -14,14 +14,14 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "@octokit/rest": "^16.25.3",
+    "@octokit/rest": "^16.28.4",
     "argparse": "^1.0.7",
-    "fs-extra": "^7.0.1",
+    "fs-extra": "^8.1.0",
     "tmp": "^0.1.0"
   },
   "devDependencies": {
-    "eslint": "^5.16.0",
-    "eslint-plugin-jest": "^22.5.1",
+    "eslint": "^6.0.1",
+    "eslint-plugin-jest": "^22.7.2",
     "jest": "^24.8.0"
   }
 }
