@@ -96,7 +96,7 @@ function parseLabels(str) {
 if (require.main === module) {
   main().catch(e => {
     if (e instanceof NeutralExitError) {
-      process.exitCode = 78;
+      process.exitCode = 0;
     } else if (e instanceof ClientError) {
       process.exitCode = 2;
       logger.error(e);
