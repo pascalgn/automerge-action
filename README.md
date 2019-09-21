@@ -32,28 +32,33 @@ from being deleted).
 
 ## Usage
 
-Add this to your `.github/main.workflow` file:
+Create a new `.github/workflows/automerge.yml` file:
 
-```
-workflow "automerge pull requests on updates" {
-  on = "pull_request"
-  resolves = ["automerge"]
-}
-
-workflow "automerge pull requests on reviews" {
-  on = "pull_request_review"
-  resolves = ["automerge"]
-}
-
-workflow "automerge pull requests on status updates" {
-  on = "status"
-  resolves = ["automerge"]
-}
-
-action "automerge" {
-  uses = "pascalgn/automerge-action@33f73f0a562129c7e96123e98af20d4378f1fa3b"
-  secrets = ["GITHUB_TOKEN"]
-}
+```yaml
+name: automerge
+on:
+  pull_request:
+    types:
+      - labeled
+      - unlabeled
+      - synchronize
+      - opened
+      - edited
+      - ready_for_review
+      - reopened
+      - unlocked
+  pull_request_review:
+    types:
+      - submitted
+  status: {}
+jobs:
+  automerge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: automerge
+        uses: "pascalgn/automerge-action@12f21da8e4282e5e95522fcd14374e78a7a24794"
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 ```
 
 ## Configuration
@@ -100,17 +105,13 @@ The following environment variables are supported:
 
 You can configure the environment variables in the workflow file like this:
 
-```
-action "automerge" {
-  uses = ...
-  secrets = ["GITHUB_TOKEN"]
-  env = {
-    LABELS = "!wip,!work in progress,documentation-updated"
-    AUTOMERGE = "ready-to-merge"
-    AUTOREBASE = "ready-to-rebase-and-merge"
-    MERGE_METHOD = "squash"
-  }
-}
+```yaml
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          LABELS: "!wip,!work in progress,documentation-updated"
+          AUTOMERGE: "ready-to-merge"
+          AUTOREBASE: "ready-to-rebase-and-merge"
+          MERGE_METHOD: "squash"
 ```
 
 ## License
