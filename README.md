@@ -90,7 +90,7 @@ The following environment variables are supported:
   (rebase all commits of the branch onto the base branch)
   or [`squash`](https://help.github.com/en/articles/about-pull-request-merges#squash-and-merge-your-pull-request-commits)
   (squash all commits into a single commit). The default option is `merge`.
-- `ENABLE_FORK`: Specify whether automerge from external repository is enabled or not.
+- `MERGE_FORKS`: Specify whether automerge from external repository is enabled or not.
   By default, it is disabled to automerge a pull-request from forked repository.
   Set `true` to enable it.
 - `TOKEN`: In some cases it can be useful to run this action as a certain user
@@ -115,7 +115,7 @@ You can configure the environment variables in the workflow file like this:
           AUTOMERGE: "ready-to-merge"
           AUTOREBASE: "ready-to-rebase-and-merge"
           MERGE_METHOD: "squash"
-          ENABLE_FORK: "true"
+          MERGE_FORKS: "true"
 ```
 
 ## License
