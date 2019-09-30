@@ -51,8 +51,8 @@ async function main() {
   const automerge = process.env.AUTOMERGE || "automerge";
   const autorebase = process.env.AUTOREBASE || "autorebase";
   const mergeMethod = process.env.MERGE_METHOD || "merge";
-  const enableFork = process.env.MERGE_FORKS === "true";
-  const config = { labels, automerge, autorebase, mergeMethod, enableFork };
+  const mergeForks = process.env.MERGE_FORKS !== "false";
+  const config = { labels, automerge, autorebase, mergeMethod, mergeForks };
 
   logger.debug("Configuration:", config);
 
