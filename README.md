@@ -26,9 +26,9 @@ A pull request is considered ready when:
    and
 3. the pull request is up to date (if enabled in the branch protection rules)
 
-After the pull request has been merged successfully, the branch will be
-deleted (unless there exist branch protection rules preventing this branch
-from being deleted).
+After the pull request has been merged successfully, the branch will _not_ be
+deleted. To delete branches after they are merged,
+see [automatic deletion of branches](https://help.github.com/en/articles/managing-the-automatic-deletion-of-branches).
 
 ## Usage
 
@@ -56,7 +56,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: automerge
-        uses: "pascalgn/automerge-action@43fd7e11ee532218966343a262f10771b5eff978"
+        uses: "pascalgn/automerge-action@de3a4d6a4975252444319cc9ab21b02d8d657229"
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 ```
