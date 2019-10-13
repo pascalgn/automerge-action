@@ -1,0 +1,8 @@
+name: "Merge pull requests"
+description: "Automatically merge pull requests that are ready"
+runs:
+  using: "docker"
+  image: "Dockerfile"
+branding:
+  icon: "git-pull-request"
+  color: "blue"
