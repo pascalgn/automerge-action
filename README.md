@@ -124,7 +124,7 @@ You can configure the environment variables in the workflow file like this:
           AUTOREBASE: "ready-to-rebase-and-merge"
           MERGE_METHOD: "squash"
           MERGE_FORKS: "false"
-          COMMIT_MESSAGE: "pull-request-description"
+          COMMIT_MESSAGE_TEMPLATE: "pull-request-description"
 ```
 
 ## License
