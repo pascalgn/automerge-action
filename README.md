@@ -95,11 +95,12 @@ The following environment variables are supported:
   be merged the same way as pull requests with branches from the main
   repository. Set this option to `false` to disable merging of pull requests
   from forked repositories.
-- `COMMIT_MESSAGE`: Specify the commit message to use when merging the pull
-  request into the base branch. Possible values are `automatic` (use git's
-  automatic message), `pull-request-title` (use the Pull Request's title),
-  `pull-request-description` (use the Pull Request's description), and
-  `pull-request-title-and-description`. The default value is `automatic`.
+- `COMMIT_MESSAGE_TEMPLATE`: Specify the commit message template to use when
+  merging the pull request into the base branch. Possible values are
+  `automatic` (use git's automatic message), `pull-request-title` (use the Pull
+  Request's title), `pull-request-description` (use the Pull Request's
+  description), and `pull-request-title-and-description`. The default value is
+  `automatic`.
 - `TOKEN`: In some cases it can be useful to run this action as a certain user
   (by default, it will run as `github-actions`). This can be useful if you want
   to use the _Restrict who can push to matching branches_ option in the branch
