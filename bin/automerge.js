@@ -52,8 +52,16 @@ async function main() {
   const autorebase = process.env.AUTOREBASE || "autorebase";
   const mergeMethod = process.env.MERGE_METHOD || "merge";
   const mergeForks = process.env.MERGE_FORKS !== "false";
-  const commitMessageTemplate = process.env.COMMIT_MESSAGE_TEMPLATE || "automatic";
-  const config = { labels, automerge, autorebase, mergeMethod, mergeForks, commitMessageTemplate };
+  const commitMessageTemplate =
+    process.env.COMMIT_MESSAGE_TEMPLATE || "automatic";
+  const config = {
+    labels,
+    automerge,
+    autorebase,
+    mergeMethod,
+    mergeForks,
+    commitMessageTemplate
+  };
 
   logger.debug("Configuration:", config);
 
