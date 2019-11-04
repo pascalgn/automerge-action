@@ -13,10 +13,12 @@ async function main() {
   });
 
   const labels = { required: [], blocking: [] };
-  const automerge = "it-automerge";
-  const autorebase = "it-autorebase";
+  const mergeLabel = "it-merge";
+  const updateLabel = "it-update";
+  const updateAndMergeLabel = "it-update-and-merge";
   const mergeMethod = "merge";
-  const config = { labels, automerge, autorebase, mergeMethod };
+  const updateMethod = "merge";
+  const config = { labels, mergeLabel, updateLabel, updateAndMergeLabel, mergeMethod, updateMethod };
 
   const context = { token, octokit, config };
 

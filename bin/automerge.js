@@ -48,17 +48,19 @@ async function main() {
   });
 
   const labels = parseLabels(process.env.LABELS);
-  const automerge = process.env.AUTOMERGE || "automerge";
-  const autorebase = process.env.AUTOREBASE || "autorebase";
+  const mergeLabel = process.env.MERGE_LABEL || "automerge";
+  const updateLabel = process.env.UPDATE_LABEL || "automerge";
   const mergeMethod = process.env.MERGE_METHOD || "merge";
+  const updateMethod = process.env.UPDATE_METHOD || "merge";
   const mergeForks = process.env.MERGE_FORKS !== "false";
   const commitMessageTemplate =
     process.env.COMMIT_MESSAGE_TEMPLATE || "automatic";
   const config = {
     labels,
-    automerge,
-    autorebase,
+    mergeLabel,
+    updateLabel,
     mergeMethod,
+    updateMethod,
     mergeForks,
     commitMessageTemplate
   };
