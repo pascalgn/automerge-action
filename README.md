@@ -4,19 +4,14 @@ GitHub action to automatically merge pull requests when they are ready.
 
 <img src="https://pascalgn.github.io/automerge-action/screenshot.svg" width="100%">
 
-This action will behave differently based on the labels assigned to a pull
-request:
+By default adding an `automerge` label to your pull request means that changes
+from the base branch will automatically be merged into the pull request, but
+only when "Require branches to be up to date before merging" is enabled in the
+branch protection rules. When the PR is ready, it will automatically be merged.
 
-- `automerge` means that changes from the base branch will automatically be
-  merged into the pull request, but only when "Require branches to be up to
-  date before merging" is enabled in the branch protection rules. When the PR
-  is ready, it will automatically be merged.
-- `autorebase` means that when changes happen in the base branch, the pull
-  request will be rebased onto the base branch. When the PR is ready, it will
-  automatically be merged into the base branch.
-- pull requests without one of these labels will be ignored
+> pull requests without any configured labels will be ignored
 
-These labels are configurable, see [Configuration](#configuration).
+Labels, merge and update strategies are all configurable, see [Configuration](#configuration).
 
 A pull request is considered ready when:
 
@@ -56,10 +51,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: automerge
-        uses: "pascalgn/automerge-action@f84dd310ea4a19890c70a4ff11ab282a872fb94b"
+        uses: "pascalgn/automerge-action@{version}"
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 ```
+
+### Automatic PR branch updates
+
+Currently github actions has no way to trigger workflows when the PR branch becomes out of date with the base branch; this has some limitations as described [here](https://github.community/t5/GitHub-Actions/New-Trigger-is-mergable-state/m-p/36908).
 
 ## Configuration
 
@@ -75,14 +74,13 @@ The following environment variables are supported:
   requests _without_ the label `documentation-updated` will not be merged.
   Blocking labels take precedence, so if a pull request has both labels
   `wip` and `documentation-updated`, it will not be merged.
-- `AUTOMERGE`: The label that indicates that the pull request will be merged
-  using the configured merge method (see `MERGE_METHOD`). When the environment
-  variable is not set, the default label `automerge` will be used.
-- `AUTOREBASE`: The label that indicates that the pull request will be rebased
-  onto the base branch whenever this pull request is updated. When the pull
-  request is ready, it will be merged using the configured merge method (see
-  `MERGE_METHOD`). When the environment variable is not set, the default label
-  `autorebase` will be used.
+
+- `MERGE_LABEL`: The label that indicates that the pull request will be merged
+  using the configured merge method (see `MERGE_METHOD`). The default label 
+  is `automerge`.
+- `UPDATE_LABEL`: The label that indicates that the pull request will be updated
+  with the base branch using the configured update method (see `UPDATE_METHOD`).
+  The default label is `automerge`
 - `MERGE_METHOD`: Specify which method to use when merging the pull request
   into the base branch. Possible values are
   [`merge`](https://help.github.com/en/articles/about-pull-request-merges) (create a merge commit),
@@ -90,6 +88,10 @@ The following environment variables are supported:
   (rebase all commits of the branch onto the base branch)
   or [`squash`](https://help.github.com/en/articles/about-pull-request-merges#squash-and-merge-your-pull-request-commits)
   (squash all commits into a single commit). The default option is `merge`.
+- `UPDATE_METHOD`: Specify which method to use when updating the pull request
+  to the base branch. Possible values are `merge` (create a merge commit),
+  `rebase` (rebases the branch onto the head of the base branch). The default
+  option is `merge`.
 - `MERGE_FORKS`: Specify whether merging from external repositories is enabled
   or not. By default, pull requests with branches from forked repositories will
   be merged the same way as pull requests with branches from the main
@@ -120,9 +122,10 @@ You can configure the environment variables in the workflow file like this:
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           LABELS: "!wip,!work in progress,documentation-updated"
-          AUTOMERGE: "ready-to-merge"
-          AUTOREBASE: "ready-to-rebase-and-merge"
+          MERGE_LABEL: "ready-to-merge"
+          UPDATE_LABEL: "ready-to-update"
           MERGE_METHOD: "squash"
+          UPDATE_METHOD: "rebase"
           MERGE_FORKS: "false"
           COMMIT_MESSAGE_TEMPLATE: "pull-request-description"
 ```
