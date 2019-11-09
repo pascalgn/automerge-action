@@ -113,6 +113,11 @@ The following update options are supported:
   to the base branch. Possible values are `merge` (create a merge commit) or
   `rebase` (rebase the branch onto the head of the base branch). The default
   option is `merge`.
+  
+  When the option is `rebase` and the [rebasing](https://git-scm.com/book/en/v2/Git-Branching-Rebasing)
+  failed, the action will exit with error code 1. This will also be visible
+  in the pull request page, with a message like "this branch has conflicts
+  that must be resolved" and a list of conflicting files.
 
 Also, the following general options are supported:
 
