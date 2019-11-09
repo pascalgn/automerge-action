@@ -6,10 +6,20 @@ const fse = require("fs-extra");
 const { ArgumentParser } = require("argparse");
 const Octokit = require("@octokit/rest");
 
-const { ClientError, NeutralExitError, logger } = require("../lib/common");
+const { ClientError, logger } = require("../lib/common");
 const { executeLocally, executeGitHubAction } = require("../lib/api");
 
 const pkg = require("../package.json");
+
+const OLD_CONFIG = [
+  "MERGE_LABEL",
+  "UPDATE_LABEL",
+  "LABELS",
+  "AUTOMERGE",
+  "AUTOREBASE",
+  "COMMIT_MESSAGE_TEMPLATE",
+  "TOKEN"
+];
 
 async function main() {
   const parser = new ArgumentParser({
@@ -40,29 +50,30 @@ async function main() {
     logger.level = "debug";
   }
 
-  const token = process.env.TOKEN || env("GITHUB_TOKEN");
+  checkOldConfig();
+
+  const token = env("GITHUB_TOKEN");
 
   const octokit = new Octokit({
     auth: `token ${token}`,
     userAgent: "pascalgn/automerge-action"
   });
 
-  const labels = parseLabels(process.env.LABELS);
-  const mergeLabel = process.env.MERGE_LABEL || "automerge";
-  const updateLabel = process.env.UPDATE_LABEL || "automerge";
+  const mergeLabels = parseLabels(process.env.MERGE_LABELS, "automerge");
   const mergeMethod = process.env.MERGE_METHOD || "merge";
-  const updateMethod = process.env.UPDATE_METHOD || "merge";
   const mergeForks = process.env.MERGE_FORKS !== "false";
-  const commitMessageTemplate =
-    process.env.COMMIT_MESSAGE_TEMPLATE || "automatic";
+  const mergeCommitMessage = process.env.MERGE_COMMIT_MESSAGE || "automatic";
+
+  const updateLabels = parseLabels(process.env.UPDATE_LABELS, "automerge");
+  const updateMethod = process.env.UPDATE_METHOD || "merge";
+
   const config = {
-    labels,
-    mergeLabel,
-    updateLabel,
+    mergeLabels,
     mergeMethod,
-    updateMethod,
     mergeForks,
-    commitMessageTemplate
+    mergeCommitMessage,
+    updateLabels,
+    updateMethod
   };
 
   logger.debug("Configuration:", config);
@@ -82,6 +93,25 @@ async function main() {
   }
 }
 
+function checkOldConfig() {
+  let error = false;
+  for (const old of OLD_CONFIG) {
+    if (process.env[old] != null) {
+      logger.error("Old configuration option present:", old);
+      error = true;
+    }
+  }
+  if (error) {
+    logger.error(
+      "You have passed configuration options that were used by an old " +
+        "version of this action. Please see " +
+        "https://github.com/pascalgn/automerge-action for the latest " +
+        "documentation of the configuration options!"
+    );
+    throw new Error(`old configuration present!`);
+  }
+}
+
 function env(name) {
   const val = process.env[name];
   if (!val || !val.length) {
@@ -90,26 +120,19 @@ function env(name) {
   return val;
 }
 
-function parseLabels(str) {
-  const labels = {
-    required: [],
-    blocking: []
-  };
-  if (str) {
-    const arr = str.split(",").map(s => s.trim());
-    labels.required = arr.filter(s => !s.startsWith("!"));
-    labels.blocking = arr
+function parseLabels(str, defaultValue) {
+  const arr = (str == null ? defaultValue : str).split(",").map(s => s.trim());
+  return {
+    required: arr.filter(s => !s.startsWith("!") && s.length > 0),
+    blocking: arr
       .filter(s => s.startsWith("!") && s.length > 1)
-      .map(s => s.substr(1));
-  }
-  return labels;
+      .map(s => s.substr(1))
+  };
 }
 
 if (require.main === module) {
   main().catch(e => {
-    if (e instanceof NeutralExitError) {
-      process.exitCode = 0;
-    } else if (e instanceof ClientError) {
+    if (e instanceof ClientError) {
       process.exitCode = 2;
       logger.error(e);
     } else {
