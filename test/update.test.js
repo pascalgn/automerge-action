@@ -1,11 +1,7 @@
-const { NeutralExitError } = require("../lib/common");
 const { update } = require("../lib/update");
 const { pullRequest } = require("./common");
 
-test("update will only change branches from the same repository", async () => {
+test("update will only run when a label is set", async () => {
   const pr = pullRequest();
-  pr.head.repo.full_name = "other/repository";
-  await expect(update({ config: {} }, "", "", pr)).rejects.toEqual(
-    new NeutralExitError()
-  );
+  expect(await update({ config: { updateLabel: "" } }, pr)).toEqual(false);
 });
