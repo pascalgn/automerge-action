@@ -12,13 +12,26 @@ async function main() {
     userAgent: "pascalgn/automerge-action-it"
   });
 
-  const mergeLabels = { required: ["it-merge"] };
+  const mergeLabels = { required: ["it-merge"], blocking: [] };
   const mergeMethod = "merge";
+  const mergeForks = false;
+  const mergeCommitMessage = "automatic";
+  const mergeRetries = 3;
+  const mergeRetrySleep = 1000;
 
-  const updateLabels = { required: ["it-update"] };
+  const updateLabels = { required: ["it-update"], blocking: [] };
   const updateMethod = "merge";
 
-  const config = { mergeLabels, mergeMethod, updateLabels, updateMethod };
+  const config = {
+    mergeLabels,
+    mergeMethod,
+    mergeForks,
+    mergeCommitMessage,
+    mergeRetries,
+    mergeRetrySleep,
+    updateLabels,
+    updateMethod
+  };
 
   const context = { token, octokit, config };
 
