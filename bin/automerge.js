@@ -63,6 +63,8 @@ async function main() {
   const mergeMethod = process.env.MERGE_METHOD || "merge";
   const mergeForks = process.env.MERGE_FORKS !== "false";
   const mergeCommitMessage = process.env.MERGE_COMMIT_MESSAGE || "automatic";
+  const mergeRetries = parsePositiveInt("MERGE_RETRIES", 6);
+  const mergeRetrySleep = parsePositiveInt("MERGE_RETRY_SLEEP", 10000);
 
   const updateLabels = parseLabels(process.env.UPDATE_LABELS, "automerge");
   const updateMethod = process.env.UPDATE_METHOD || "merge";
@@ -72,6 +74,8 @@ async function main() {
     mergeMethod,
     mergeForks,
     mergeCommitMessage,
+    mergeRetries,
+    mergeRetrySleep,
     updateLabels,
     updateMethod
   };
@@ -128,6 +132,20 @@ function parseLabels(str, defaultValue) {
       .filter(s => s.startsWith("!") && s.length > 1)
       .map(s => s.substr(1))
   };
+}
+
+function parsePositiveInt(name, defaultValue) {
+  const val = process.env[name];
+  if (val == null || val === "") {
+    return defaultValue;
+  } else {
+    const number = parseInt(val);
+    if (isNaN(number) || number < 0) {
+      throw new ClientError(`Not a positive integer: ${val}`);
+    } else {
+      return number;
+    }
+  }
 }
 
 if (require.main === module) {

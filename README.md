@@ -98,6 +98,14 @@ The following merge options are supported:
   repository. Set this option to `false` to disable merging of pull requests
   from forked repositories.
 
+- `MERGE_RETRIES` and `MERGE_RETRY_SLEEP`: Sometimes, the pull request check
+  runs haven't finished yet, so the action will retry the merge after some time.
+  The number of retries can be set with `MERGE_RETRIES`.
+  The default number of retries is `6` and setting it to `0` disables the retry logic.
+  `MERGE_RETRY_SLEEP` sets the time to sleep between retries, in milliseconds.
+  The default is `10000` (10 seconds) and setting it to `0` disables sleeping
+  between retries.
+
 The following update options are supported:
 
 - `UPDATE_LABELS`: The labels that need to be present for a pull request to be
@@ -144,6 +152,8 @@ You can configure the environment variables in the workflow file like this:
           MERGE_METHOD: "squash"
           MERGE_COMMIT_MESSAGE: "pull-request-description"
           MERGE_FORKS: "false"
+          MERGE_RETRIES: "6"
+          MERGE_RETRY_SLEEP: "10000"
           UPDATE_LABELS: ""
           UPDATE_METHOD: "rebase"
 ```
