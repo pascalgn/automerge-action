@@ -1,7 +1,9 @@
 const { update } = require("../lib/update");
+const { createConfig } = require("../lib/common");
 const { pullRequest } = require("./common");
 
-test("update will only run when a label is set", async () => {
+test("update will only run when the label matches", async () => {
   const pr = pullRequest();
-  expect(await update({ config: { updateLabel: "" } }, pr)).toEqual(false);
+  const config = createConfig({ UPDATE_LABELS: "none" });
+  expect(await update({ config }, pr)).toEqual(false);
 });

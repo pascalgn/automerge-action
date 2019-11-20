@@ -6,7 +6,7 @@ const fse = require("fs-extra");
 const { ArgumentParser } = require("argparse");
 const Octokit = require("@octokit/rest");
 
-const { ClientError, logger } = require("../lib/common");
+const { ClientError, logger, createConfig } = require("../lib/common");
 const { executeLocally, executeGitHubAction } = require("../lib/api");
 
 const pkg = require("../package.json");
@@ -59,27 +59,7 @@ async function main() {
     userAgent: "pascalgn/automerge-action"
   });
 
-  const mergeLabels = parseLabels(process.env.MERGE_LABELS, "automerge");
-  const mergeMethod = process.env.MERGE_METHOD || "merge";
-  const mergeForks = process.env.MERGE_FORKS !== "false";
-  const mergeCommitMessage = process.env.MERGE_COMMIT_MESSAGE || "automatic";
-  const mergeRetries = parsePositiveInt("MERGE_RETRIES", 6);
-  const mergeRetrySleep = parsePositiveInt("MERGE_RETRY_SLEEP", 10000);
-
-  const updateLabels = parseLabels(process.env.UPDATE_LABELS, "automerge");
-  const updateMethod = process.env.UPDATE_METHOD || "merge";
-
-  const config = {
-    mergeLabels,
-    mergeMethod,
-    mergeForks,
-    mergeCommitMessage,
-    mergeRetries,
-    mergeRetrySleep,
-    updateLabels,
-    updateMethod
-  };
-
+  const config = createConfig(process.env);
   logger.debug("Configuration:", config);
 
   const context = { token, octokit, config };
@@ -122,30 +102,6 @@ function env(name) {
     throw new ClientError(`environment variable ${name} not set!`);
   }
   return val;
-}
-
-function parseLabels(str, defaultValue) {
-  const arr = (str == null ? defaultValue : str).split(",").map(s => s.trim());
-  return {
-    required: arr.filter(s => !s.startsWith("!") && s.length > 0),
-    blocking: arr
-      .filter(s => s.startsWith("!") && s.length > 1)
-      .map(s => s.substr(1))
-  };
-}
-
-function parsePositiveInt(name, defaultValue) {
-  const val = process.env[name];
-  if (val == null || val === "") {
-    return defaultValue;
-  } else {
-    const number = parseInt(val);
-    if (isNaN(number) || number < 0) {
-      throw new ClientError(`Not a positive integer: ${val}`);
-    } else {
-      return number;
-    }
-  }
 }
 
 if (require.main === module) {
