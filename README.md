@@ -160,6 +160,9 @@ You can configure the environment variables in the workflow file like this:
 
 ## Limitations
 
+- When a pull request is merged by this action, the merge will not trigger other GitHub workflows.
+  Similarly, when another GitHub workflow creates a pull request, this action will not be triggered.
+  This is because [an action in a workflow run can't trigger a new workflow run](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/events-that-trigger-workflows).
 - When a check from a build tools like Jenkins or CircleCI completes, GitHub
   triggers the action workflow, but sometimes the pull request state is still
   pending, blocking the merge. This is [an open issue](https://github.com/pascalgn/automerge-action/issues/7).
