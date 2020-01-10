@@ -89,8 +89,9 @@ The following merge options are supported:
 - `MERGE_COMMIT_MESSAGE`: The commit message to use when merging the pull
   request into the base branch. Possible values are `automatic` (use GitHub's
   default message), `pull-request-title` (use the pull request's title),
-  `pull-request-description` (use the pull request's description), and
-  `pull-request-title-and-description`. The default value is `automatic`.
+  `pull-request-description` (use the pull request's description),
+  `pull-request-title-and-description` and
+  `automerge` (arbitrary '_Auto merge #{PR number}_'). The default value is `automatic`.
 
 - `MERGE_FORKS`: Whether merging from external repositories is enabled
   or not. By default, pull requests with branches from forked repositories will
