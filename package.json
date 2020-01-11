@@ -15,15 +15,15 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "@octokit/rest": "^16.33.1",
+    "@octokit/rest": "^16.36.0",
     "argparse": "^1.0.7",
     "fs-extra": "^8.1.0",
     "tmp": "^0.1.0"
   },
   "devDependencies": {
-    "dotenv": "^8.1.0",
-    "eslint": "^6.5.1",
-    "eslint-plugin-jest": "^22.19.0",
+    "dotenv": "^8.2.0",
+    "eslint": "^6.8.0",
+    "eslint-plugin-jest": "^23.4.0",
     "jest": "^24.9.0"
   }
 }
