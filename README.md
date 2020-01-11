@@ -106,6 +106,10 @@ The following merge options are supported:
   The default is `10000` (10 seconds) and setting it to `0` disables sleeping
   between retries.
 
+- `MERGE_DELETE_BRANCH`: Automatic deletion of branches does not work for all
+  repositories. Set this option to `true` to automatically delete branches
+  after they have been merged.
+
 The following update options are supported:
 
 - `UPDATE_LABELS`: The labels that need to be present for a pull request to be
