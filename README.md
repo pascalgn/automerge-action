@@ -90,8 +90,9 @@ The following merge options are supported:
   request into the base branch. Possible values are `automatic` (use GitHub's
   default message), `pull-request-title` (use the pull request's title),
   `pull-request-description` (use the pull request's description),
-  `pull-request-title-and-description` and
-  `automerge` (arbitrary '_Auto merge #{PR number}_'). The default value is `automatic`.
+  `pull-request-title-and-description` or a literal
+  value with optional placeholders (eg.: _Auto merge #{pullRequest.number}_).
+  The default value is `automatic`.
 
 - `MERGE_FORKS`: Whether merging from external repositories is enabled
   or not. By default, pull requests with branches from forked repositories will
