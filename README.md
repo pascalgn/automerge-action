@@ -51,6 +51,7 @@ on:
 jobs:
   automerge:
     runs-on: ubuntu-latest
+    if: github.base_ref != null
     steps:
       - name: automerge
         uses: "pascalgn/automerge-action@7854d3bd607dccdaf0b2c134b699a812c8960213"
