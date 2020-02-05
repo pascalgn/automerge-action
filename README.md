@@ -78,6 +78,13 @@ The following merge options are supported:
 
   When an empty string (`""`) is given, all pull requests will be merged.
 
+- `MERGE_REMOVE_LABELS`: The labels to automatically remove from a pull request
+  once it has ben merged by the action. The default value is `automerge`.
+
+  This option can be a comma-separated list of labels that will be checked.
+
+  When an empty string (`""`) is given, no labels will be removed.
+
 - `MERGE_METHOD`: Which method to use when merging the pull request into
   the base branch. Possible values are
   [`merge`](https://help.github.com/en/articles/about-pull-request-merges) (create a merge commit),
@@ -155,6 +162,7 @@ You can configure the environment variables in the workflow file like this:
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           MERGE_LABELS: "automerge,!work in progress"
+          MERGE_REMOVE_LABELS: "automerge"
           MERGE_METHOD: "squash"
           MERGE_COMMIT_MESSAGE: "pull-request-description"
           MERGE_FORKS: "false"
