@@ -176,6 +176,17 @@ You can configure the environment variables in the workflow file like this:
   becomes out of date with the base branch. There is a request in the
   [GitHub community forum](https://github.community/t5/GitHub-Actions/New-Trigger-is-mergable-state/m-p/36908).
 
+## Debugging
+
+To run the action with full debug logging, update your workflow file as follows:
+
+```
+      - name: automerge
+        uses: pascalgn/automerge-action@...
+        with:
+          args: "--trace"
+```
+
 ## License
 
 [MIT](LICENSE)
