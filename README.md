@@ -53,7 +53,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: automerge
-        uses: "pascalgn/automerge-action@7854d3bd607dccdaf0b2c134b699a812c8960213"
+        uses: "pascalgn/automerge-action@ecb16453ce68e85b1e23596c8caa7e7499698a84"
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 ```
