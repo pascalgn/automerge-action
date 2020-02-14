@@ -101,6 +101,14 @@ The following merge options are supported:
   value with optional placeholders (for example `Auto merge {pullRequest.number}`).
   The default value is `automatic`.
 
+- `MERGE_COMMIT_MESSAGE_REGEX`: When using a commit message containing the
+  PR's body, use the first capturing subgroup from this regex as the commit
+  message. Can be used to separate content that should go with the commit into
+  the code base's history from boilerplate associated with the PR (licensing
+  notices, check lists, etc). For example, `(.*)^---` would keep everything up
+  until the first 3-dash line (horizontal rule in MarkDown) from the commit
+  message. The default value is empty, which disables this feature.
+
 - `MERGE_FORKS`: Whether merging from external repositories is enabled
   or not. By default, pull requests with branches from forked repositories will
   be merged the same way as pull requests with branches from the main
@@ -134,7 +142,7 @@ The following update options are supported:
   to the base branch. Possible values are `merge` (create a merge commit) or
   `rebase` (rebase the branch onto the head of the base branch). The default
   option is `merge`.
-  
+
   When the option is `rebase` and the [rebasing](https://git-scm.com/book/en/v2/Git-Branching-Rebasing)
   failed, the action will exit with error code 1. This will also be visible
   in the pull request page, with a message like "this branch has conflicts

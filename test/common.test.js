@@ -14,13 +14,18 @@ test("createConfig", () => {
     },
     mergeForks: true,
     mergeCommitMessage: "automatic",
+    mergeCommitMessageRegex: "",
+    mergeDeleteBranch: false,
     mergeRetries: 3,
     mergeRetrySleep: 10000,
     updateMethod: "merge",
     updateLabels: {
       blocking: ["block1", "block2"],
       required: ["required1", "required2"]
-    }
+    },
+    mergeRemoveLabels: [
+      "",
+    ],
   };
   expect(config).toEqual(expected);
 });
