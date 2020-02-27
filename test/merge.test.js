@@ -52,3 +52,56 @@ test("Throw if MERGE_COMMIT_MESSAGE_REGEX is invalid", async () => {
   // WHEN
   expect(merge({ config, octokit }, pr)).rejects.toThrow('capturing subgroup');
 });
+
+test("MERGE_FILTER_AUTHOR can be used to auto merge based on author", async () => {
+  // GIVEN
+  const pr = pullRequest();
+  const author = 'minime';
+  const user = {
+    login: author
+  };
+  pr.user = user;
+
+  const config = createConfig({
+    MERGE_COMMIT_MESSAGE: 'pull-request-title-and-description',
+    MERGE_FILTER_AUTHOR: author
+  });
+
+  // WHEN
+  expect(await merge({ config, octokit }, pr)).toEqual(true);
+});
+
+test("MERGE_FILTER_AUTHOR when not set should not affect anything", async () => {
+  // GIVEN
+  const pr = pullRequest();
+  const author = 'minime';
+    const user = {
+      login: author
+  };
+  pr.user = user;
+
+  const config = createConfig({
+    MERGE_COMMIT_MESSAGE: 'pull-request-title-and-description'
+  });
+
+  // WHEN
+  expect(await merge({ config, octokit }, pr)).toEqual(true);
+});
+
+test("MERGE_FILTER_AUTHOR when set but do not match current author should not merge", async () => {
+  // GIVEN
+  const pr = pullRequest();
+  const author = 'notminime';
+    const user = {
+      login: author
+  };
+  pr.user = user;
+
+  const config = createConfig({
+    MERGE_COMMIT_MESSAGE: 'pull-request-title-and-description',
+    MERGE_FILTER_AUTHOR: 'minime'
+  });
+
+  // WHEN
+  expect(await merge({ config, octokit }, pr)).toEqual(false);
+});

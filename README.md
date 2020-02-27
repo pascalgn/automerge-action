@@ -79,7 +79,7 @@ The following merge options are supported:
   When an empty string (`""`) is given, all pull requests will be merged.
 
 - `MERGE_REMOVE_LABELS`: The labels to automatically remove from a pull request
-  once it has ben merged by the action. The default value is `""`.
+  once it has been merged by the action. The default value is `""`.
 
   This option can be a comma-separated list of labels that will be removed.
 
@@ -108,6 +108,9 @@ The following merge options are supported:
   notices, check lists, etc). For example, `(.*)^---` would keep everything up
   until the first 3-dash line (horizontal rule in MarkDown) from the commit
   message. The default value is empty, which disables this feature.
+
+- `MERGE_FILTER_AUTHOR`: When set, will auto merge pull request raised by
+  this author only.
 
 - `MERGE_FORKS`: Whether merging from external repositories is enabled
   or not. By default, pull requests with branches from forked repositories will
