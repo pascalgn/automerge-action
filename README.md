@@ -47,6 +47,7 @@ on:
   pull_request_review:
     types:
       - submitted
+  check_suites_run: {}
   status: {}
 jobs:
   automerge:
