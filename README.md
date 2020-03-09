@@ -47,7 +47,9 @@ on:
   pull_request_review:
     types:
       - submitted
-  check_suites_run: {}
+  check_suites_run: 
+    types:
+      - completed
   status: {}
 jobs:
   automerge:
@@ -123,6 +125,10 @@ The following merge options are supported:
   `MERGE_RETRY_SLEEP` sets the time to sleep between retries, in milliseconds.
   The default is `10000` (10 seconds) and setting it to `0` disables sleeping
   between retries.
+
+  If some cases (travis ci for example), this action can also be triggered by the successful completion of checks
+  (i.e. builds) via the `check_suites_run` statement in the `automerge.yml`. In that case
+  you can safely set this to `0`.
 
 - `MERGE_DELETE_BRANCH`: Automatic deletion of branches does not work for all
   repositories. Set this option to `true` to automatically delete branches
