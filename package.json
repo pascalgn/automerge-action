@@ -16,7 +16,7 @@
     "prepublish": "yarn lint && yarn test"
   },
   "dependencies": {
-    "@octokit/rest": "^16.36.0",
+    "@octokit/rest": "^17.1.0",
     "argparse": "^1.0.7",
     "fs-extra": "^8.1.0",
     "tmp": "^0.1.0"
@@ -24,8 +24,8 @@
   "devDependencies": {
     "dotenv": "^8.2.0",
     "eslint": "^6.8.0",
-    "eslint-plugin-jest": "^23.4.0",
-    "jest": "^24.9.0",
+    "eslint-plugin-jest": "^23.8.2",
+    "jest": "^25.1.0",
     "prettier": "^1.19.1"
   }
 }

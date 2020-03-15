@@ -4,7 +4,7 @@ const process = require("process");
 
 const fse = require("fs-extra");
 const { ArgumentParser } = require("argparse");
-const Octokit = require("@octokit/rest");
+const { Octokit } = require("@octokit/rest");
 
 const { ClientError, logger, createConfig } = require("../lib/common");
 const { executeLocally, executeGitHubAction } = require("../lib/api");
