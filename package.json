@@ -12,7 +12,8 @@
   "scripts": {
     "test": "jest",
     "it": "node it/it.js",
-    "lint": "eslint ."
+    "lint": "prettier -l lib/** test/** && eslint .",
+    "prepublish": "yarn lint && yarn test"
   },
   "dependencies": {
     "@octokit/rest": "^16.36.0",
@@ -24,6 +25,7 @@
     "dotenv": "^8.2.0",
     "eslint": "^6.8.0",
     "eslint-plugin-jest": "^23.4.0",
-    "jest": "^24.9.0"
+    "jest": "^24.9.0",
+    "prettier": "^1.19.1"
   }
 }
