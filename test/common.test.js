@@ -24,9 +24,7 @@ test("createConfig", () => {
       blocking: ["block1", "block2"],
       required: ["required1", "required2"]
     },
-    mergeRemoveLabels: [
-      "",
-    ],
+    mergeRemoveLabels: [""]
   };
   expect(config).toEqual(expected);
 });
