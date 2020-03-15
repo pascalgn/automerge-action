@@ -8,6 +8,7 @@ test("createConfig", () => {
   });
   const expected = {
     mergeMethod: "merge",
+    mergeFilterAuthor: "",
     mergeLabels: {
       blocking: [],
       required: []
