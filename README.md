@@ -109,8 +109,8 @@ The following merge options are supported:
   until the first 3-dash line (horizontal rule in MarkDown) from the commit
   message. The default value is empty, which disables this feature.
 
-- `MERGE_FILTER_AUTHOR`: When set, will auto merge pull request raised by
-  this author only.
+- `MERGE_FILTER_AUTHOR`: When set, only pull requests raised by this author
+  will be merged automatically.
 
 - `MERGE_FORKS`: Whether merging from external repositories is enabled
   or not. By default, pull requests with branches from forked repositories will
