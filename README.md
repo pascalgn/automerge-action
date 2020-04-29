@@ -47,7 +47,7 @@ on:
   pull_request_review:
     types:
       - submitted
-  check_suite: 
+  check_suite:
     types:
       - completed
   status: {}
