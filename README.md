@@ -126,7 +126,7 @@ The following merge options are supported:
   The number of retries can be set with `MERGE_RETRIES`.
   The default number of retries is `6` and setting it to `0` disables the retry logic.
   `MERGE_RETRY_SLEEP` sets the time to sleep between retries, in milliseconds.
-  The default is `10000` (10 seconds) and setting it to `0` disables sleeping
+  The default is `5000` (5 seconds) and setting it to `0` disables sleeping
   between retries.
 
 - `MERGE_DELETE_BRANCH`: Automatic deletion of branches does not work for all
@@ -153,6 +153,15 @@ The following update options are supported:
   failed, the action will exit with error code 1. This will also be visible
   in the pull request page, with a message like "this branch has conflicts
   that must be resolved" and a list of conflicting files.
+
+- `UPDATE_RETRIES` and `UPDATE_RETRY_SLEEP`: Sometimes, the pull request check
+  runs haven't finished yet and the action doesn't know if an update is
+  necessary. To query the pull request state multiple times, the number of
+  retries can be set with `UPDATE_RETRIES`. The default number of retries is `1`
+  and setting it to `0` disables the retry logic.
+  `UPDATE_RETRY_SLEEP` sets the time to sleep between retries, in milliseconds.
+  The default is `5000` (5 seconds) and setting it to `0` disables sleeping
+  between retries.
 
 Also, the following general options are supported:
 
