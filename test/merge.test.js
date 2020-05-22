@@ -1,6 +1,6 @@
 const { merge } = require("../lib/merge");
 const { createConfig } = require("../lib/common");
-const { pullRequest } = require("./common");
+const { pullRequest, reviews } = require("./common");
 
 let octokit;
 
@@ -73,6 +73,28 @@ test("MERGE_FILTER_AUTHOR can be used to auto merge based on author", async () =
 
   // WHEN
   expect(await merge({ config, octokit }, pr)).toEqual(true);
+});
+
+test("MERGE_APROOVED_BY_REVIEWERS can be used to auto merge based on requested reviewers", async () => {
+  // GIVEN
+  const pr = pullRequest();
+  const reviewsMock = reviews();
+  const reviewers = ["minime"];
+
+  const config = createConfig({
+    MERGE_APROOVED_BY_REVIEWERS: reviewers,
+  });
+
+  // WHEN
+  expect(await merge({ config, octokit }, pr, reviewsMock)).toEqual(true);
+
+  // GIVEN
+  const configWithNotApprovedReviwers = createConfig({
+    MERGE_APROOVED_BY_REVIEWERS: ["minime_fake"],
+  });
+
+  // WHEN
+  expect(await merge({ config: configWithNotApprovedReviwers, octokit }, pr, reviewsMock)).toEqual(false);
 });
 
 test("MERGE_FILTER_AUTHOR when not set should not affect anything", async () => {

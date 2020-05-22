@@ -34,4 +34,25 @@ function pullRequest() {
   };
 }
 
-module.exports = { pullRequest };
+function reviews() {
+  return [
+    {
+      id: 80,
+      user: {
+        "login": "minime",
+      },
+      body: "Here is the body for the review.",
+      state: "APPROVED",
+    },
+    {
+      id: 81,
+      user: {
+        "login": "minime2",
+      },
+      body: "Here is the body for the review.",
+      state: "APPROVED",
+    }
+  ];
+}
+
+module.exports = { pullRequest, reviews };
