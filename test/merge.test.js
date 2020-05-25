@@ -79,7 +79,7 @@ test("MERGE_APROOVED_BY_REVIEWERS can be used to auto merge based on requested r
   // GIVEN
   const pr = pullRequest();
   const reviewsMock = reviews();
-  const reviewers = "minime";
+  const reviewers = "test, minime";
 
   const config = createConfig({
     MERGE_APROOVED_BY_REVIEWERS: reviewers,
@@ -90,11 +90,26 @@ test("MERGE_APROOVED_BY_REVIEWERS can be used to auto merge based on requested r
 
   // GIVEN
   const configWithNotApprovedReviwers = createConfig({
-    MERGE_APROOVED_BY_REVIEWERS: "minime_fake",
+    MERGE_APROOVED_BY_REVIEWERS: "minime_fake, test, fake",
   });
 
   // WHEN
   expect(await merge({ config: configWithNotApprovedReviwers, octokit }, pr, reviewsMock)).toEqual(false);
+});
+
+test("MERGE_APROOVED_BY_REVIEWERS doesn't affect other checks", async () => {
+  // GIVEN
+  const pr = pullRequest();
+  const reviewsMock = reviews();
+  const reviewers = "test, minime, test2";
+
+  const config = createConfig({
+    MERGE_LABELS: 'SHOULD_FAIL',
+    MERGE_APROOVED_BY_REVIEWERS: reviewers,
+  });
+
+  // WHEN
+  expect(await merge({ config, octokit }, pr, reviewsMock)).toEqual(false);
 });
 
 test("MERGE_FILTER_AUTHOR when not set should not affect anything", async () => {
