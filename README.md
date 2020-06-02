@@ -82,7 +82,7 @@ The following merge options are supported:
   When an empty string (`""`) is given, all pull requests will be merged.
 
 - `MERGE_REMOVE_LABELS`: The labels to automatically remove from a pull request
-  once it has been merged by the action. The default value is `""`.
+  once it has been merged by the action. The default value is `""`. [NB - due to a bug this currently deletes the label from the repo altogether]
 
   This option can be a comma-separated list of labels that will be removed.
 
