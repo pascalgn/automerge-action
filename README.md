@@ -112,6 +112,11 @@ The following merge options are supported:
   until the first 3-dash line (horizontal rule in MarkDown) from the commit
   message. The default value is empty, which disables this feature.
 
+- `MERGE_COMMIT_MESSAGE_EXCLUDE_REGEX`: When using a commit message containing the
+  PR's body, use this regex to strip out unwanted content.  For example, to strip html
+  comments, so the commit message matches the rendered PR description use the regex
+  `<!--[\\s\\S]*?(?:-->)?<!---+>?|<!(?![dD][oO][cC][tT][yY][pP][eE]|\\[CDATA\\[)[^>]*>?|<[?][^>]*>?`
+
 - `MERGE_FILTER_AUTHOR`: When set, only pull requests raised by this author
   will be merged automatically.
 
