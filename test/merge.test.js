@@ -2,12 +2,13 @@ const { merge } = require("../lib/merge");
 const { createConfig } = require("../lib/common");
 const { pullRequest } = require("./common");
 
-let octokit;
+let octokit, mergeMethod;
 
 beforeEach(() => {
+  mergeMethod = undefined;
   octokit = {
     pulls: {
-      merge: jest.fn()
+      merge: jest.fn(({ merge_method }) => (mergeMethod = merge_method))
     }
   };
 });
@@ -108,4 +109,32 @@ test("MERGE_FILTER_AUTHOR when set but do not match current author should not me
 
   // WHEN
   expect(await merge({ config, octokit }, pr)).toEqual(false);
+});
+
+test("Merge method can be set by env variable", async () => {
+  // GIVEN
+  const pr = pullRequest();
+
+  const config = createConfig({
+    MERGE_METHOD: "rebase"
+  });
+
+  // WHEN
+  expect(await merge({ config, octokit }, pr)).toEqual(true);
+  expect(mergeMethod).toEqual("rebase");
+});
+
+test("Merge method can be set by any required label", async () => {
+  // GIVEN
+  const pr = pullRequest();
+  pr.labels = [{ name: "automerge.squash" }, { name: "reallyautomerge" }];
+
+  const config = createConfig({
+    MERGE_METHOD: "merge",
+    MERGE_LABELS: "automerge,reallyautomerge"
+  });
+
+  // WHEN
+  expect(await merge({ config, octokit }, pr)).toEqual(true);
+  expect(mergeMethod).toEqual("squash");
 });

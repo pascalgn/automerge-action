@@ -96,6 +96,9 @@ The following merge options are supported:
   or [`squash`](https://help.github.com/en/articles/about-pull-request-merges#squash-and-merge-your-pull-request-commits)
   (squash all commits into a single commit). The default option is `merge`.
 
+  Additionally, labeling a PR with any required label plus the suffix
+  `.merge`, `.rebase`, `.squash` sets the merge method for that PR.
+
 - `MERGE_COMMIT_MESSAGE`: The commit message to use when merging the pull
   request into the base branch. Possible values are `automatic` (use GitHub's
   default message), `pull-request-title` (use the pull request's title),
