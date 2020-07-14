@@ -130,6 +130,7 @@ test("Merge method can be set by any required label", async () => {
   pr.labels = [{ name: "automerge.squash" }, { name: "reallyautomerge" }];
 
   const config = createConfig({
+    MERGE_USE_METHOD_LABELS: "true",
     MERGE_METHOD: "merge",
     MERGE_LABELS: "automerge,reallyautomerge"
   });
