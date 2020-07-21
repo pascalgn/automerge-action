@@ -56,7 +56,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: automerge
-        uses: "kpenfound/automerge-action@4536e8847eb62fe2f0ee52c8fa92d17aa97f932f"
+        uses: "pascalgn/automerge-action@4536e8847eb62fe2f0ee52c8fa92d17aa97f932f"
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 ```
@@ -214,7 +214,7 @@ To run the action with full debug logging, update your workflow file as follows:
 
 ```
       - name: automerge
-        uses: kpenfound/automerge-action@...
+        uses: pascalgn/automerge-action@...
         with:
           args: "--trace"
 ```
