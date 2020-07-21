@@ -1,4 +1,4 @@
-name: "Merge pull requests"
+name: "kpenfound fork of Merge pull requests"
 description: "Automatically merge pull requests that are ready"
 runs:
   using: "docker"
