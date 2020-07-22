@@ -124,15 +124,15 @@ test("Merge method can be set by env variable", async () => {
   expect(mergeMethod).toEqual("rebase");
 });
 
-test("Merge method can be set by any required label", async () => {
+test("Merge method can be set by a merge method label", async () => {
   // GIVEN
   const pr = pullRequest();
-  pr.labels = [{ name: "automerge.squash" }, { name: "reallyautomerge" }];
+  pr.labels = [{ name: "autosquash" }, { name: "reallyautomerge" }];
 
   const config = createConfig({
-    MERGE_USE_METHOD_LABELS: "true",
+    MERGE_METHOD_LABELS: "automerge=merge,autosquash=squash,autorebase=rebase",
     MERGE_METHOD: "merge",
-    MERGE_LABELS: "automerge,reallyautomerge"
+    MERGE_LABELS: "reallyautomerge"
   });
 
   // WHEN

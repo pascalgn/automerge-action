@@ -13,7 +13,7 @@ test("createConfig", () => {
       blocking: [],
       required: []
     },
-    mergeUseMethodLabels: false,
+    mergeMethodLabels: [],
     mergeForks: true,
     mergeCommitMessage: "automatic",
     mergeCommitMessageRegex: "",
