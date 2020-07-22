@@ -139,3 +139,53 @@ test("Merge method can be set by a merge method label", async () => {
   expect(await merge({ config, octokit }, pr)).toEqual(true);
   expect(mergeMethod).toEqual("squash");
 });
+
+test("Merge method can be required", async () => {
+  // GIVEN
+  const pr = pullRequest();
+  pr.labels = [{ name: "autosquash" }];
+
+  const config = createConfig({
+    MERGE_METHOD_LABELS: "automerge=merge,autosquash=squash,autorebase=rebase",
+    MERGE_METHOD_LABEL_REQUIRED: "true",
+    MERGE_METHOD: "merge",
+    MERGE_LABELS: ""
+  });
+
+  // WHEN
+  expect(await merge({ config, octokit }, pr)).toEqual(true);
+  expect(mergeMethod).toEqual("squash");
+});
+
+test("Missing require merge method skips PR", async () => {
+  // GIVEN
+  const pr = pullRequest();
+  pr.labels = [{ name: "mergeme" }];
+
+  const config = createConfig({
+    MERGE_METHOD_LABELS: "automerge=merge,autosquash=squash,autorebase=rebase",
+    MERGE_METHOD_LABEL_REQUIRED: "true",
+    MERGE_METHOD: "merge",
+    MERGE_LABELS: "mergeme"
+  });
+
+  // WHEN
+  expect(await merge({ config, octokit }, pr)).toEqual(false);
+});
+
+test("Merge method doesn't have to be required", async () => {
+  // GIVEN
+  const pr = pullRequest();
+  pr.labels = [{ name: "mergeme" }];
+
+  const config = createConfig({
+    MERGE_METHOD_LABELS: "automerge=merge,autosquash=squash,autorebase=rebase",
+    MERGE_METHOD_LABEL_REQUIRED: "false",
+    MERGE_METHOD: "merge",
+    MERGE_LABELS: "mergeme"
+  });
+
+  // WHEN
+  expect(await merge({ config, octokit }, pr)).toEqual(true);
+  expect(mergeMethod).toEqual("merge");
+});

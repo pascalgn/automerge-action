@@ -101,6 +101,9 @@ The following merge options are supported:
 
   If no such label is present, use `MERGE_METHOD`.
 
+- `MERGE_METHOD_LABEL_REQUIRED`: Set to `"true"` to require one of the
+  `MERGE_METHOD_LABELS` to be set.
+
 - `MERGE_COMMIT_MESSAGE`: The commit message to use when merging the pull
   request into the base branch. Possible values are `automatic` (use GitHub's
   default message), `pull-request-title` (use the pull request's title),

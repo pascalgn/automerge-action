@@ -14,6 +14,7 @@ test("createConfig", () => {
       required: []
     },
     mergeMethodLabels: [],
+    mergeMethodLabelRequired: false,
     mergeForks: true,
     mergeCommitMessage: "automatic",
     mergeCommitMessageRegex: "",
