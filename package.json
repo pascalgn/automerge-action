@@ -16,16 +16,16 @@
     "prepublish": "yarn lint && yarn test"
   },
   "dependencies": {
-    "@octokit/rest": "^17.6.0",
+    "@octokit/rest": "^18.0.3",
     "argparse": "^1.0.7",
-    "fs-extra": "^9.0.0",
+    "fs-extra": "^9.0.1",
     "tmp": "^0.2.1"
   },
   "devDependencies": {
     "dotenv": "^8.2.0",
-    "eslint": "^6.8.0",
-    "eslint-plugin-jest": "^23.8.2",
-    "jest": "^25.5.1",
+    "eslint": "^7.5.0",
+    "eslint-plugin-jest": "^23.18.2",
+    "jest": "^26.1.0",
     "prettier": "^2.0.5"
   },
   "prettier": {
