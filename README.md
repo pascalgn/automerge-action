@@ -96,10 +96,12 @@ The following merge options are supported:
   or [`squash`](https://help.github.com/en/articles/about-pull-request-merges#squash-and-merge-your-pull-request-commits)
   (squash all commits into a single commit). The default option is `merge`.
 
-- `MERGE_METHOD_LABELS`: Set to allow labels to determine the merge method.
-  For example, `automerge=merge,autosquash=squash,autorebase=rebase`.
+- `MERGE_METHOD_LABELS`: Set to allow labels to determine the merge method
+  (see `MERGE_METHOD` for possible values).
+  For example, `automerge=merge,autosquash=squash`. If no such label is present,
+  the method set by `MERGE_METHOD` will be used.
 
-  If no such label is present, use `MERGE_METHOD`.
+  The default value is `""`.
 
 - `MERGE_METHOD_LABEL_REQUIRED`: Set to `"true"` to require one of the
   `MERGE_METHOD_LABELS` to be set.

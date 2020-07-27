@@ -189,3 +189,18 @@ test("Merge method doesn't have to be required", async () => {
   expect(await merge({ config, octokit }, pr)).toEqual(true);
   expect(mergeMethod).toEqual("merge");
 });
+
+test("Multiple merge method labels throw an error", async () => {
+  // GIVEN
+  const pr = pullRequest();
+  pr.labels = [{ name: "automerge" }, { name: "autosquash" }];
+
+  const config = createConfig({
+    MERGE_METHOD_LABELS: "automerge=merge,autosquash=squash,autorebase=rebase",
+    MERGE_METHOD_LABEL_REQUIRED: "true",
+    MERGE_METHOD: "merge",
+  });
+
+  // WHEN
+  expect(merge({ config, octokit }, pr)).rejects.toThrow("merge method labels");
+});
