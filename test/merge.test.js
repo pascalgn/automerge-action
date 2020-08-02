@@ -198,7 +198,7 @@ test("Multiple merge method labels throw an error", async () => {
   const config = createConfig({
     MERGE_METHOD_LABELS: "automerge=merge,autosquash=squash,autorebase=rebase",
     MERGE_METHOD_LABEL_REQUIRED: "true",
-    MERGE_METHOD: "merge",
+    MERGE_METHOD: "merge"
   });
 
   // WHEN
