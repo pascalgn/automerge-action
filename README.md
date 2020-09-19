@@ -205,7 +205,7 @@ You can configure the environment variables in the workflow file like this:
 
 ## Supported Events
 
-Automerge can be triggered by these webhook events:
+Automerge can be configured to run for these events:
 
 * `check_run`
 * `check_suite`
@@ -219,7 +219,7 @@ Automerge can be triggered by these webhook events:
 * `status`
 * `workflow_dispatch`
 
-For more information on when these occur, see the Github documentation on [Webhook events and payloads](https://docs.github.com/en/developers/webhooks-and-events/webhook-events-and-payloads).
+For more information on when these occur, see the Github documentation on [events that trigger workflows](https://docs.github.com/en/actions/reference/events-that-trigger-workflows) and [their payloads](https://docs.github.com/en/developers/webhooks-and-events/webhook-events-and-payloads).
 
 ## Limitations
 
