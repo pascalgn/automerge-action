@@ -203,6 +203,24 @@ You can configure the environment variables in the workflow file like this:
           UPDATE_METHOD: "rebase"
 ```
 
+## Supported Events
+
+Automerge can be configured to run for these events:
+
+* `check_run`
+* `check_suite`
+* `issue_comment`
+* `pull_request_review`
+* `pull_request_target`
+* `pull_request`
+* `push`
+* `repository_dispatch`
+* `schedule`
+* `status`
+* `workflow_dispatch`
+
+For more information on when these occur, see the Github documentation on [events that trigger workflows](https://docs.github.com/en/actions/reference/events-that-trigger-workflows) and [their payloads](https://docs.github.com/en/developers/webhooks-and-events/webhook-events-and-payloads).
+
 ## Limitations
 
 - When a pull request is merged by this action, the merge will not trigger other GitHub workflows.
