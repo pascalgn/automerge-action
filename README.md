@@ -56,10 +56,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: automerge
-        uses: "pascalgn/automerge-action@c29cef1b62bfb675777896255a70c69fc01bcfe4"
+        uses: "pascalgn/automerge-action@v0.11.0"
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 ```
+
+For the latest version, see the [list of releases](https://github.com/pascalgn/automerge-action/releases).
 
 ## Configuration
 
