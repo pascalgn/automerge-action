@@ -23,8 +23,8 @@
   },
   "devDependencies": {
     "dotenv": "^8.2.0",
-    "eslint": "^7.9.0",
-    "eslint-plugin-jest": "^24.0.1",
+    "eslint": "^7.10.0",
+    "eslint-plugin-jest": "^24.0.2",
     "jest": "^26.4.2",
     "prettier": "^2.1.2"
   },
