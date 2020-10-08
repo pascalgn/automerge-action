@@ -24,25 +24,29 @@ const OLD_CONFIG = [
 async function main() {
   const parser = new ArgumentParser({
     prog: pkg.name,
-    version: pkg.version,
-    addHelp: true,
+    add_help: true,
     description: pkg.description
   });
-  parser.addArgument(["-t", "--trace"], {
-    action: "storeTrue",
+  parser.add_argument("-v", "--version", {
+    action: "version",
+    version: pkg.version,
+    help: "Show version number and exit"
+  });
+  parser.add_argument("-t", "--trace", {
+    action: "store_true",
     help: "Show trace output"
   });
-  parser.addArgument(["-d", "--debug"], {
-    action: "storeTrue",
+  parser.add_argument("-d", "--debug", {
+    action: "store_true",
     help: "Show debugging output"
   });
-  parser.addArgument(["url"], {
+  parser.add_argument("url", {
     metavar: "<url>",
     nargs: "?",
     help: "GitHub URL to process instead of environment variables"
   });
 
-  const args = parser.parseArgs();
+  const args = parser.parse_args();
 
   if (args.trace) {
     logger.level = "trace";
