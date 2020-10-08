@@ -16,11 +16,11 @@ beforeEach(() => {
 test("MERGE_COMMIT_MESSAGE with nested custom fields", async () => {
   // GIVEN
   const pr = pullRequest();
-  pr.title = "This is the PR's title"
-  pr.user = {login: "author"};
+  pr.title = "This is the PR's title";
+  pr.user = { login: "author" };
 
   const config = createConfig({
-    MERGE_COMMIT_MESSAGE: "{pullRequest.title} @{pullRequest.user.login}",
+    MERGE_COMMIT_MESSAGE: "{pullRequest.title} @{pullRequest.user.login}"
   });
 
   // WHEN
@@ -29,8 +29,7 @@ test("MERGE_COMMIT_MESSAGE with nested custom fields", async () => {
   // THEN
   expect(octokit.pulls.merge).toHaveBeenCalledWith(
     expect.objectContaining({
-      commit_title:
-        "This is the PR's title @author",
+      commit_title: "This is the PR's title @author",
       commit_message: "",
       pull_number: 1,
       repo: "repository",
