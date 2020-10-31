@@ -8,19 +8,27 @@ test("createConfig", () => {
   });
   const expected = {
     mergeMethod: "merge",
+    mergeFilterAuthor: "",
     mergeLabels: {
       blocking: [],
       required: []
     },
+    mergeMethodLabels: [],
+    mergeMethodLabelRequired: false,
     mergeForks: true,
     mergeCommitMessage: "automatic",
+    mergeCommitMessageRegex: "",
+    mergeDeleteBranch: false,
     mergeRetries: 3,
-    mergeRetrySleep: 10000,
+    mergeRetrySleep: 5000,
+    mergeRemoveLabels: [""],
     updateMethod: "merge",
     updateLabels: {
       blocking: ["block1", "block2"],
       required: ["required1", "required2"]
-    }
+    },
+    updateRetries: 1,
+    updateRetrySleep: 5000
   };
   expect(config).toEqual(expected);
 });

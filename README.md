@@ -47,16 +47,21 @@ on:
   pull_request_review:
     types:
       - submitted
+  check_suite:
+    types:
+      - completed
   status: {}
 jobs:
   automerge:
     runs-on: ubuntu-latest
     steps:
       - name: automerge
-        uses: "pascalgn/automerge-action@2c8e667a3386187418587517e5bfe33470d19b5b"
+        uses: "pascalgn/automerge-action@v0.12.0"
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 ```
+
+For the latest version, see the [list of releases](https://github.com/pascalgn/automerge-action/releases).
 
 ## Configuration
 
@@ -78,6 +83,13 @@ The following merge options are supported:
 
   When an empty string (`""`) is given, all pull requests will be merged.
 
+- `MERGE_REMOVE_LABELS`: The labels to automatically remove from a pull request
+  once it has been merged by the action. The default value is `""`.
+
+  This option can be a comma-separated list of labels that will be removed.
+
+  When an empty string (`""`) is given, no labels will be removed.
+
 - `MERGE_METHOD`: Which method to use when merging the pull request into
   the base branch. Possible values are
   [`merge`](https://help.github.com/en/articles/about-pull-request-merges) (create a merge commit),
@@ -86,25 +98,50 @@ The following merge options are supported:
   or [`squash`](https://help.github.com/en/articles/about-pull-request-merges#squash-and-merge-your-pull-request-commits)
   (squash all commits into a single commit). The default option is `merge`.
 
+- `MERGE_METHOD_LABELS`: Set to allow labels to determine the merge method
+  (see `MERGE_METHOD` for possible values).
+  For example, `automerge=merge,autosquash=squash`. If no such label is present,
+  the method set by `MERGE_METHOD` will be used. The default value is `""`.
+
+- `MERGE_METHOD_LABEL_REQUIRED`: Set to `true` to require one of the
+  `MERGE_METHOD_LABELS` to be set. The default value is `false`.
+
 - `MERGE_COMMIT_MESSAGE`: The commit message to use when merging the pull
   request into the base branch. Possible values are `automatic` (use GitHub's
   default message), `pull-request-title` (use the pull request's title),
-  `pull-request-description` (use the pull request's description), and
-  `pull-request-title-and-description`. The default value is `automatic`.
+  `pull-request-description` (use the pull request's description),
+  `pull-request-title-and-description` or a literal
+  value with optional placeholders (for example `Auto merge {pullRequest.number}`).
+  The default value is `automatic`.
+
+- `MERGE_COMMIT_MESSAGE_REGEX`: When using a commit message containing the
+  PR's body, use the first capturing subgroup from this regex as the commit
+  message. Can be used to separate content that should go with the commit into
+  the code base's history from boilerplate associated with the PR (licensing
+  notices, check lists, etc). For example, `(.*)^---` would keep everything up
+  until the first 3-dash line (horizontal rule in MarkDown) from the commit
+  message. The default value is empty, which disables this feature.
+
+- `MERGE_FILTER_AUTHOR`: When set, only pull requests raised by this author
+  will be merged automatically.
 
 - `MERGE_FORKS`: Whether merging from external repositories is enabled
   or not. By default, pull requests with branches from forked repositories will
   be merged the same way as pull requests with branches from the main
   repository. Set this option to `false` to disable merging of pull requests
-  from forked repositories.
+  from forked repositories. The default value is `true`.
 
 - `MERGE_RETRIES` and `MERGE_RETRY_SLEEP`: Sometimes, the pull request check
   runs haven't finished yet, so the action will retry the merge after some time.
   The number of retries can be set with `MERGE_RETRIES`.
   The default number of retries is `6` and setting it to `0` disables the retry logic.
   `MERGE_RETRY_SLEEP` sets the time to sleep between retries, in milliseconds.
-  The default is `10000` (10 seconds) and setting it to `0` disables sleeping
+  The default is `5000` (5 seconds) and setting it to `0` disables sleeping
   between retries.
+
+- `MERGE_DELETE_BRANCH`: Automatic deletion of branches does not work for all
+  repositories. Set this option to `true` to automatically delete branches
+  after they have been merged. The default value is `false`.
 
 The following update options are supported:
 
@@ -121,11 +158,20 @@ The following update options are supported:
   to the base branch. Possible values are `merge` (create a merge commit) or
   `rebase` (rebase the branch onto the head of the base branch). The default
   option is `merge`.
-  
+
   When the option is `rebase` and the [rebasing](https://git-scm.com/book/en/v2/Git-Branching-Rebasing)
   failed, the action will exit with error code 1. This will also be visible
   in the pull request page, with a message like "this branch has conflicts
   that must be resolved" and a list of conflicting files.
+
+- `UPDATE_RETRIES` and `UPDATE_RETRY_SLEEP`: Sometimes, the pull request check
+  runs haven't finished yet and the action doesn't know if an update is
+  necessary. To query the pull request state multiple times, the number of
+  retries can be set with `UPDATE_RETRIES`. The default number of retries is `1`
+  and setting it to `0` disables the retry logic.
+  `UPDATE_RETRY_SLEEP` sets the time to sleep between retries, in milliseconds.
+  The default is `5000` (5 seconds) and setting it to `0` disables sleeping
+  between retries.
 
 Also, the following general options are supported:
 
@@ -149,6 +195,7 @@ You can configure the environment variables in the workflow file like this:
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           MERGE_LABELS: "automerge,!work in progress"
+          MERGE_REMOVE_LABELS: "automerge"
           MERGE_METHOD: "squash"
           MERGE_COMMIT_MESSAGE: "pull-request-description"
           MERGE_FORKS: "false"
@@ -158,17 +205,57 @@ You can configure the environment variables in the workflow file like this:
           UPDATE_METHOD: "rebase"
 ```
 
+## Supported Events
+
+Automerge can be configured to run for these events:
+
+* `check_run`
+* `check_suite`
+* `issue_comment`
+* `pull_request_review`
+* `pull_request_target`
+* `pull_request`
+* `push`
+* `repository_dispatch`
+* `schedule`
+* `status`
+* `workflow_dispatch`
+
+For more information on when these occur, see the Github documentation on [events that trigger workflows](https://docs.github.com/en/actions/reference/events-that-trigger-workflows) and [their payloads](https://docs.github.com/en/developers/webhooks-and-events/webhook-events-and-payloads).
+
 ## Limitations
 
 - When a pull request is merged by this action, the merge will not trigger other GitHub workflows.
   Similarly, when another GitHub workflow creates a pull request, this action will not be triggered.
-  This is because [an action in a workflow run can't trigger a new workflow run](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/events-that-trigger-workflows).
-- When a check from a build tools like Jenkins or CircleCI completes, GitHub
-  triggers the action workflow, but sometimes the pull request state is still
-  pending, blocking the merge. This is [an open issue](https://github.com/pascalgn/automerge-action/issues/7).
+  This is because [an action in a workflow run can't trigger a new workflow run](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/events-that-trigger-workflows). However, the [`workflow_run`](https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows#workflow_run) event is triggered as expected.
+- When [using a personal access token (PAT) to work around the above limitation](https://help.github.com/en/actions/reference/events-that-trigger-workflows#triggering-new-workflows-using-a-personal-access-token), note that when the user issuing the PAT is an administrator and [branch restrictions do not include administrators](https://help.github.com/en/github/administering-a-repository/enabling-branch-restrictions), pull requests may be merged even if they are not mergeable for non-administrators (see [#65](https://github.com/pascalgn/automerge-action/issues/65)).
 - Currently, there is no way to trigger workflows when the pull request branch
   becomes out of date with the base branch. There is a request in the
   [GitHub community forum](https://github.community/t5/GitHub-Actions/New-Trigger-is-mergable-state/m-p/36908).
+
+## Debugging
+
+To run the action with full debug logging, update your workflow file as follows:
+
+```
+      - name: automerge
+        uses: pascalgn/automerge-action@...
+        with:
+          args: "--trace"
+```
+
+If you need to further debug the action, you can run it locally.
+
+You will need a [personal access token](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line).
+
+Then clone this repository, create a file `.env` in the repository, such as:
+
+```
+GITHUB_TOKEN="123abc..."
+URL="https://github.com/pascalgn/repository-name/pull/123"
+```
+
+Install dependencies with `yarn`, and finally run `yarn it` (or `npm run it`).
 
 ## License
 

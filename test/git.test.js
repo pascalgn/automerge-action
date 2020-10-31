@@ -24,7 +24,7 @@ test("clone creates the target directory", async () => {
   await tmpdir(async path => {
     await init(`${path}/origin`);
     await commit(`${path}/origin`);
-    await git.clone(`file://${path}/origin`, `${path}/ws`, "master", 1);
+    await git.clone(`${path}/origin`, `${path}/ws`, "master", 1);
     expect(await fse.exists(`${path}/ws`)).toBe(true);
   });
 });
@@ -41,7 +41,7 @@ test("fetchUntilMergeBase finds the correct merge base", async () => {
     await commit(origin, "master %d", 20);
 
     const ws = `${path}/ws`;
-    await git.clone(`file://${path}/origin`, ws, "br1");
+    await git.clone(`${path}/origin`, ws, "br1");
     await git.fetch(ws, "master");
     expect(await git.fetchUntilMergeBase(ws, "master", 10000)).toBe(base);
   });
@@ -63,7 +63,7 @@ test("fetchUntilMergeBase finds the earliest merge base 1", async () => {
     await commit(origin, "master after merge %d", 10);
 
     const ws = `${path}/ws`;
-    await git.clone(`file://${path}/origin`, ws, "br1");
+    await git.clone(`${path}/origin`, ws, "br1");
     await git.fetch(ws, "master");
     expect(await git.fetchUntilMergeBase(ws, "master", 10000)).toBe(base);
   });
@@ -90,7 +90,7 @@ test("fetchUntilMergeBase finds the earliest merge base 2", async () => {
     await git.git(origin, "merge", "--no-ff", "br2");
 
     const ws = `${path}/ws`;
-    await git.clone(`file://${path}/origin`, ws, "br1");
+    await git.clone(`${path}/origin`, ws, "br1");
     await git.fetch(ws, "master");
     expect(await git.fetchUntilMergeBase(ws, "master", 10000)).toBe(base);
   });
