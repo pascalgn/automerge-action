@@ -95,8 +95,9 @@ The following merge options are supported:
   [`merge`](https://help.github.com/en/articles/about-pull-request-merges) (create a merge commit),
   [`rebase`](https://help.github.com/en/articles/about-pull-request-merges#rebase-and-merge-your-pull-request-commits)
   (rebase all commits of the branch onto the base branch)
-  or [`squash`](https://help.github.com/en/articles/about-pull-request-merges#squash-and-merge-your-pull-request-commits)
+  [`squash`](https://help.github.com/en/articles/about-pull-request-merges#squash-and-merge-your-pull-request-commits)
   (squash all commits into a single commit). The default option is `merge`.
+  or [`none`] Do not perform any merge operation. This option could be used with `REVIEW_MESSAGE` to only add a review to pull request.
 
 - `MERGE_METHOD_LABELS`: Set to allow labels to determine the merge method
   (see `MERGE_METHOD` for possible values).
@@ -172,6 +173,8 @@ The following update options are supported:
   `UPDATE_RETRY_SLEEP` sets the time to sleep between retries, in milliseconds.
   The default is `5000` (5 seconds) and setting it to `0` disables sleeping
   between retries.
+
+- `REVIEW_MESSAGE` Adds a pull request review if the pull request is ready to merge.
 
 Also, the following general options are supported:
 
