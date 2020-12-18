@@ -1,8 +1,8 @@
 name: "Merge pull requests"
 description: "Automatically merge pull requests that are ready"
 runs:
-  using: "docker"
-  image: "Dockerfile"
+  using: "node12"
+  main: "dist/index.js"
 branding:
   icon: "git-pull-request"
   color: "blue"
