@@ -749,6 +749,11 @@
     "@typescript-eslint/types" "4.4.0"
     eslint-visitor-keys "^2.0.0"
 
+"@vercel/ncc@^0.26.0":
+  version "0.26.0"
+  resolved "https://registry.npmjs.org/@vercel/ncc/-/ncc-0.26.0.tgz#f144d2381147604fbec520b770f136d17a94690f"
+  integrity sha512-5XWU+Flb5wKGNjIbMWAwsDImfVtw8AVXttN5ZMmmgEC4ilKauxwV3odI2V+R6qMHOBa2kmGjUBFP9+J+w3OEaw==
+
 abab@^2.0.3:
   version "2.0.5"
   resolved "https://registry.yarnpkg.com/abab/-/abab-2.0.5.tgz#c0b678fb32d60fc1219c784d6a826fe385aeb79a"
