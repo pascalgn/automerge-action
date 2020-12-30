@@ -10,7 +10,9 @@ When added, this action will run the following tasks on pull requests with the
 - Changes from the base branch will automatically be merged into the pull
   request (only when "Require branches to be up to date before merging"
   is enabled in the branch protection rules)
-- When the pull request is ready, it will automatically be merged
+- When the pull request is ready, it will automatically be merged. The action
+  will only wait for status checks that are marked as required in the branch
+  protection rules
 - Pull requests without any configured labels will be ignored
 
 Labels, merge and update strategies are configurable, see [Configuration](#configuration).
