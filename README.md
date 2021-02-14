@@ -29,6 +29,10 @@ After the pull request has been merged successfully, the branch will _not_ be
 deleted. To delete branches after they are merged,
 see [automatic deletion of branches](https://help.github.com/en/articles/managing-the-automatic-deletion-of-branches).
 
+----
+
+**This functionality is now available directly in GitHub as [auto-merge](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/automatically-merging-a-pull-request).** The automerge-action project will still be maintained, but users are encouraged to switch to auto-merge for simple workflows, as it offers a faster and more stable experience.
+
 ## Usage
 
 Create a new `.github/workflows/automerge.yml` file:
@@ -58,7 +62,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: automerge
-        uses: "pascalgn/automerge-action@v0.13.0"
+        uses: "pascalgn/automerge-action@v0.13.1"
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 ```
