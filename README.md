@@ -31,7 +31,9 @@ see [automatic deletion of branches](https://help.github.com/en/articles/managin
 
 ----
 
-**This functionality is now available directly in GitHub as [auto-merge](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/automatically-merging-a-pull-request).** The automerge-action project will still be maintained, but users are encouraged to switch to auto-merge for simple workflows, as it offers a faster and more stable experience.
+**This functionality is now available directly in \*GitHub as [auto-merge](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/automatically-merging-a-pull-request).** The automerge-action project will still be maintained, but users are encouraged to switch to auto-merge for simple workflows, as it offers a faster and more stable experience.
+
+*\*GitHub does not currently support auto-rebasing PRs*
 
 ## Usage
 
