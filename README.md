@@ -195,11 +195,7 @@ Also, the following general options are supported:
   so make sure to add it as secret, not as environment variable, in the GitHub
   workflow file!
 
-- `PULL_REQUEST_NUMBER`: If provided, this action will attempt to merge the specified pull request. By default, it will attempt to use the pull request specified in the GitHub context.
-
-- `GITHUB_OWNER`: If provided in conjunction with the `PULL_REQUEST_NUMBER` parameter, this optional parameter specifies the GitHub owner to search for the pull request in. By default, it will use the GitHub owner of the repo that the action is running in.
-
-- `REPO_NAME`: If provided in conjunction with the `PULL_REQUEST_NUMBER` parameter, this optional parameter specifies the GitHub repo to search for the pull request in. By default, it will use the repo that the action is running in.
+- `PULL_REQUEST`: If provided, this action will attempt to merge the specified pull request. By default, it will attempt to use the pull request specified in the GitHub context. If a pull request number is provided via this input, this action will search in the current repo for the provided pull request number. If you want to merge a pull request in another repo, just provide the repo slug before the pull request number, like `Some-Org/Some-Repo/1234`
 
 You can configure the environment variables in the workflow file like this:
 
@@ -215,6 +211,7 @@ You can configure the environment variables in the workflow file like this:
           MERGE_RETRY_SLEEP: "10000"
           UPDATE_LABELS: ""
           UPDATE_METHOD: "rebase"
+          PULL_REQUEST: "1234"
 ```
 
 ## Supported Events
