@@ -199,7 +199,7 @@ async function executeGitHubAction(context, eventName, eventData) {
   if (config.pullRequestNumber) {
     const repoOwner = config.repoOwner || eventData.repository.owner.login;
     const repoName = config.repoName || eventData.repository.name;
-    await handleArbitraryPullRequestUpdate(context, repoOwner, repoName);
+    await handleArbitraryPullRequestUpdate(context, repoOwner, repoName, config.pullRequestNumber);
   } else if (["push"].includes(eventName)) {
     await handleBaseBranchUpdate(context, eventName, eventData);
   } else if (["status"].includes(eventName)) {
