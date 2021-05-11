@@ -1,4 +1,4 @@
-name: "Merge pull requests"
+name: "Merge pull requests (automerge-action)"
 description: "Automatically merge pull requests that are ready"
 runs:
   using: "node12"
