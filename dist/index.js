@@ -195,7 +195,9 @@ async function executeGitHubAction(context, eventName, eventData) {
   logger.info("Event name:", eventName);
   logger.trace("Event data:", eventData);
 
-  if (["push"].includes(eventName)) {
+  if (context.config.pullRequest != null) {
+    await handleArbitraryPullRequestUpdate(context, eventData);
+  } else if (["push"].includes(eventName)) {
     await handleBaseBranchUpdate(context, eventName, eventData);
   } else if (["status"].includes(eventName)) {
     await handleStatusUpdate(context, eventName, eventData);
@@ -231,6 +233,34 @@ async function handlePullRequestUpdate(context, eventName, event) {
 
   await update(context, pullRequest);
   await merge(context, pullRequest);
+}
+
+async function handleArbitraryPullRequestUpdate(context, eventData) {
+  const { config, octokit } = context;
+
+  const repoOwner =
+    config.pullRequest.repoOwner || eventData.repository.owner.login;
+  const repoName = config.pullRequest.repoName || eventData.repository.name;
+  const { pullRequestNumber } = config.pullRequest;
+
+  logger.info(`Looking for pull request #${pullRequestNumber}...`);
+
+  try {
+    const { data: pullRequest } = await octokit.pulls.get({
+      owner: repoOwner,
+      repo: repoName,
+      pull_number: pullRequestNumber
+    });
+    logger.trace("Full PR:", pullRequest);
+
+    await update(context, pullRequest);
+    await merge(context, pullRequest);
+  } catch (e) {
+    logger.error(
+      `Error fetching pull request: ${repoOwner}/${repoName}/${pullRequestNumber}`
+    );
+    throw e;
+  }
 }
 
 async function handleCheckUpdate(context, eventName, event) {
@@ -517,7 +547,6 @@ module.exports = { executeLocally, executeGitHubAction };
 
 const util = __webpack_require__(1669);
 const process = __webpack_require__(1765);
-
 const fse = __webpack_require__(5630);
 const tmp = __webpack_require__(8517);
 
@@ -611,13 +640,57 @@ function createConfig(env = {}) {
     if (val == null || val === "") {
       return defaultValue;
     } else {
-      const number = parseInt(val);
+      const number = parseInt(val, 10);
       if (isNaN(number) || number < 0) {
         throw new ClientError(`Not a positive integer: ${val}`);
       } else {
         return number;
       }
     }
+  }
+
+  function parsePullRequest(pullRequest) {
+    if (!pullRequest) {
+      return null;
+    }
+
+    logger.info(`Parsing PULL_REQUEST input: ${pullRequest}`);
+
+    const error = new ClientError(
+      `Invalid value provided for input PULL_REQUEST: ${pullRequest}. Must be a positive integer, optionally prefixed by a repo slug.`
+    );
+
+    if (typeof pullRequest === "string") {
+      let repoOwner;
+      let repoName;
+      let pullRequestNumber;
+
+      const destructuredPullRequest = pullRequest.split("/");
+      if (destructuredPullRequest.length === 3) {
+        [repoOwner, repoName, pullRequestNumber] = destructuredPullRequest;
+      } else if (destructuredPullRequest.length === 1) {
+        [pullRequestNumber] = destructuredPullRequest;
+      } else {
+        throw error;
+      }
+
+      pullRequestNumber = parseInt(pullRequestNumber, 10);
+      if (isNaN(pullRequestNumber) || pullRequestNumber <= 0) {
+        throw error;
+      }
+
+      return {
+        repoOwner,
+        repoName,
+        pullRequestNumber
+      };
+    }
+
+    if (typeof pullRequest === "number" && pullRequest > 0) {
+      return { pullRequestNumber: pullRequest };
+    }
+
+    throw error;
   }
 
   const mergeLabels = parseMergeLabels(env.MERGE_LABELS, "automerge");
@@ -638,6 +711,8 @@ function createConfig(env = {}) {
   const updateRetries = parsePositiveInt("UPDATE_RETRIES", 1);
   const updateRetrySleep = parsePositiveInt("UPDATE_RETRY_SLEEP", 5000);
 
+  const pullRequest = parsePullRequest(env.PULL_REQUEST);
+
   return {
     mergeLabels,
     mergeRemoveLabels,
@@ -654,7 +729,8 @@ function createConfig(env = {}) {
     updateLabels,
     updateMethod,
     updateRetries,
-    updateRetrySleep
+    updateRetrySleep,
+    pullRequest
   };
 }
 
