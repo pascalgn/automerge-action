@@ -195,16 +195,8 @@ async function executeGitHubAction(context, eventName, eventData) {
   logger.info("Event name:", eventName);
   logger.trace("Event data:", eventData);
 
-  const { config } = context;
-  if (config.pullRequestNumber) {
-    const repoOwner = config.repoOwner || eventData.repository.owner.login;
-    const repoName = config.repoName || eventData.repository.name;
-    await handleArbitraryPullRequestUpdate(
-      context,
-      repoOwner,
-      repoName,
-      config.pullRequestNumber
-    );
+  if (context.config.pullRequest != null) {
+    await handleArbitraryPullRequestUpdate(context, eventData);
   } else if (["push"].includes(eventName)) {
     await handleBaseBranchUpdate(context, eventName, eventData);
   } else if (["status"].includes(eventName)) {
@@ -243,30 +235,31 @@ async function handlePullRequestUpdate(context, eventName, event) {
   await merge(context, pullRequest);
 }
 
-async function handleArbitraryPullRequestUpdate(
-  context,
-  owner,
-  repo,
-  pullRequestNumber
-) {
-  const { octokit } = context;
+async function handleArbitraryPullRequestUpdate(context, eventData) {
+  const { config, octokit } = context;
+
+  const repoOwner =
+    config.pullRequest.repoOwner || eventData.repository.owner.login;
+  const repoName = config.pullRequest.repoName || eventData.repository.name;
+  const { pullRequestNumber } = config.pullRequest;
+
   logger.info(`Looking for pull request #${pullRequestNumber}...`);
 
   try {
     const { data: pullRequest } = await octokit.pulls.get({
-      owner,
-      repo,
+      owner: repoOwner,
+      repo: repoName,
       pull_number: pullRequestNumber
     });
     logger.trace("Full PR:", pullRequest);
 
     await update(context, pullRequest);
     await merge(context, pullRequest);
-  } catch (apiError) {
-    throw new ClientError(
-      `Error fetching pull request #${pullRequestNumber}`,
-      apiError
+  } catch (e) {
+    logger.error(
+      `Error fetching pull request: ${repoOwner}/${repoName}/${pullRequestNumber}`
     );
+    throw e;
   }
 }
 
@@ -656,38 +649,36 @@ function createConfig(env = {}) {
     }
   }
 
-  function parsePullRequest() {
-    if (!env.PULL_REQUEST) {
-      return {
-        repoOwner: undefined,
-        repoName: undefined,
-        pullRequestNumber: undefined
-      };
+  function parsePullRequest(pullRequest) {
+    if (!pullRequest) {
+      return null;
     }
 
-    logger.info(`Parsing PULL_REQUEST input: ${env.PULL_REQUEST}`);
+    logger.info(`Parsing PULL_REQUEST input: ${pullRequest}`);
 
     const error = new ClientError(
-      `Invalid value provided for input PULL_REQUEST: ${env.PULL_REQUEST}. Must be a positive integer, optionally prefixed by a repo slug.`
+      `Invalid value provided for input PULL_REQUEST: ${pullRequest}. Must be a positive integer, optionally prefixed by a repo slug.`
     );
-    if (typeof env.PULL_REQUEST === "string") {
+
+    if (typeof pullRequest === "string") {
       let repoOwner;
       let repoName;
       let pullRequestNumber;
 
-      // Check if a repo slug is provided
-      const destructuredPullRequest = env.PULL_REQUEST.split("/");
+      const destructuredPullRequest = pullRequest.split("/");
       if (destructuredPullRequest.length === 3) {
         [repoOwner, repoName, pullRequestNumber] = destructuredPullRequest;
-      } else {
+      } else if (destructuredPullRequest.length === 1) {
         [pullRequestNumber] = destructuredPullRequest;
-      }
-
-      // Parse the pull request number
-      pullRequestNumber = parseInt(pullRequestNumber, 10);
-      if (isNaN(pullRequestNumber) || pullRequestNumber < 0) {
+      } else {
         throw error;
       }
+
+      pullRequestNumber = parseInt(pullRequestNumber, 10);
+      if (isNaN(pullRequestNumber) || pullRequestNumber <= 0) {
+        throw error;
+      }
+
       return {
         repoOwner,
         repoName,
@@ -695,8 +686,8 @@ function createConfig(env = {}) {
       };
     }
 
-    if (typeof env.PULL_REQUEST === "number" && env.PULL_REQUEST > 0) {
-      return { pullRequestNumber: env.PULL_REQUEST };
+    if (typeof pullRequest === "number" && pullRequest > 0) {
+      return { pullRequestNumber: pullRequest };
     }
 
     throw error;
@@ -720,7 +711,7 @@ function createConfig(env = {}) {
   const updateRetries = parsePositiveInt("UPDATE_RETRIES", 1);
   const updateRetrySleep = parsePositiveInt("UPDATE_RETRY_SLEEP", 5000);
 
-  const { repoOwner, repoName, pullRequestNumber } = parsePullRequest();
+  const pullRequest = parsePullRequest(env.PULL_REQUEST);
 
   return {
     mergeLabels,
@@ -739,9 +730,7 @@ function createConfig(env = {}) {
     updateMethod,
     updateRetries,
     updateRetrySleep,
-    repoOwner,
-    repoName,
-    pullRequestNumber
+    pullRequest
   };
 }
 

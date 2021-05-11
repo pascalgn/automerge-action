@@ -29,9 +29,7 @@ test("createConfig", () => {
     },
     updateRetries: 1,
     updateRetrySleep: 5000,
-    repoOwner: undefined,
-    repoName: undefined,
-    pullRequestNumber: undefined
+    pullRequest: null
   };
   expect(config).toEqual(expected);
 });
@@ -66,7 +64,9 @@ test("createConfig with arbitrary pull request (as string)", () => {
     },
     updateRetries: 1,
     updateRetrySleep: 5000,
-    pullRequestNumber: 144
+    pullRequest: {
+      pullRequestNumber: 144
+    }
   };
   expect(config).toEqual(expected);
 });
@@ -101,7 +101,9 @@ test("createConfig with arbitrary pull request (as number)", () => {
     },
     updateRetries: 1,
     updateRetrySleep: 5000,
-    pullRequestNumber: 144
+    pullRequest: {
+      pullRequestNumber: 144
+    }
   };
   expect(config).toEqual(expected);
 });
@@ -136,9 +138,11 @@ test("createConfig with arbitrary pull request in another repo", () => {
     },
     updateRetries: 1,
     updateRetrySleep: 5000,
-    repoOwner: "pascalgn",
-    repoName: "automerge-action",
-    pullRequestNumber: 144
+    pullRequest: {
+      repoOwner: "pascalgn",
+      repoName: "automerge-action",
+      pullRequestNumber: 144
+    }
   };
   expect(config).toEqual(expected);
 });
