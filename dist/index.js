@@ -76,8 +76,8 @@ async function executeGitHubAction(context, eventName, eventData) {
     await handleStatusUpdate(context, eventName, eventData);
   } else if (["pull_request", "pull_request_target"].includes(eventName)) {
     await handlePullRequestUpdate(context, eventName, eventData);
-  } else if (["check_suite", "check_run"].includes(eventName)) {
-    await handleCheckUpdate(context, eventName, eventData);
+  } else if (["check_suite", "check_run", "workflow_run"].includes(eventName)) {
+    await handleCheckOrWorkflowUpdate(context, eventName, eventData);
   } else if (["pull_request_review"].includes(eventName)) {
     await handlePullRequestReviewUpdate(context, eventName, eventData);
   } else if (["schedule", "repository_dispatch"].includes(eventName)) {
@@ -136,39 +136,41 @@ async function handleArbitraryPullRequestUpdate(context, eventData) {
   }
 }
 
-async function handleCheckUpdate(context, eventName, event) {
+async function handleCheckOrWorkflowUpdate(context, eventName, event) {
   const { action } = event;
+  const label = eventName === "workflow_run" ? "workflow" : "status check";
   if (action !== "completed") {
-    logger.info("A status check is not yet complete:", eventName);
-  } else {
-    const payload =
-      eventName === "check_suite" ? event.check_suite : event.check_run;
-    if (payload.conclusion === "success") {
-      logger.info("Status check completed successfully");
-      const checkPullRequest = payload.pull_requests[0];
-      if (checkPullRequest != null) {
-        const { octokit } = context;
-        const { data: pullRequest } = await octokit.request(
-          checkPullRequest.url
-        );
-        logger.trace("PR:", pullRequest);
+    logger.info(`A ${label} is not yet complete:`, eventName);
+    return;
+  }
+  const payload = event[eventName];
+  if (!payload) {
+    throw new Error(`failed to find payload for event type: ${eventName}`);
+  }
+  if (payload.conclusion !== "success") {
+    logger.info(`A ${label} completed unsuccessfully:`, eventName);
+    return;
+  }
+  logger.info(`${label} completed successfully`);
 
-        await update(context, pullRequest);
-        await merge(context, pullRequest);
-      } else {
-        const branchName = payload.head_branch;
-        if (branchName != null) {
-          await checkPullRequestsForBranches(context, event, branchName);
-        } else {
-          await checkPullRequestsForHeadSha(
-            context,
-            event.repository,
-            payload.head_sha
-          );
-        }
-      }
+  const eventPullRequest = payload.pull_requests[0];
+  if (eventPullRequest != null) {
+    const { octokit } = context;
+    const { data: pullRequest } = await octokit.request(eventPullRequest.url);
+    logger.trace("PR:", pullRequest);
+
+    await update(context, pullRequest);
+    await merge(context, pullRequest);
+  } else {
+    const branchName = payload.head_branch;
+    if (branchName != null) {
+      await checkPullRequestsForBranches(context, event, branchName);
     } else {
-      logger.info("A status check completed unsuccessfully:", eventName);
+      await checkPullRequestsForHeadSha(
+        context,
+        event.repository,
+        payload.head_sha
+      );
     }
   }
 }
