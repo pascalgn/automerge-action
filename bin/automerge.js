@@ -32,14 +32,6 @@ async function main() {
     version: pkg.version,
     help: "Show version number and exit"
   });
-  parser.add_argument("-t", "--trace", {
-    action: "store_true",
-    help: "Show trace output"
-  });
-  parser.add_argument("-d", "--debug", {
-    action: "store_true",
-    help: "Show debugging output"
-  });
   parser.add_argument("url", {
     metavar: "<url>",
     nargs: "?",
@@ -48,10 +40,12 @@ async function main() {
 
   const args = parser.parse_args();
 
-  if (args.trace) {
+  if (process.env.LOG === "TRACE") {
     logger.level = "trace";
-  } else if (args.debug) {
+  } else if (process.env.LOG === "DEBUG") {
     logger.level = "debug";
+  } else if (process.env.LOG && process.env.LOG.length > 0) {
+    logger.error("Invalid log level:", process.env.LOG);
   }
 
   checkOldConfig();

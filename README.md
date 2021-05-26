@@ -247,11 +247,12 @@ For more information on when these occur, see the Github documentation on [event
 
 To run the action with full debug logging, update your workflow file as follows:
 
-```
+```yaml
       - name: automerge
         uses: pascalgn/automerge-action@...
-        with:
-          args: "--trace"
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          LOG: "TRACE"  # or "DEBUG"
 ```
 
 If you need to further debug the action, you can run it locally.
