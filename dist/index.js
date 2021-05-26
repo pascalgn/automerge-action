@@ -138,20 +138,22 @@ async function handleArbitraryPullRequestUpdate(context, eventData) {
 
 async function handleCheckOrWorkflowUpdate(context, eventName, event) {
   const { action } = event;
-  const label = eventName === "workflow_run" ? "workflow" : "status check";
+  const eventType = eventName === "workflow_run" ? "workflow" : "status check";
   if (action !== "completed") {
-    logger.info(`A ${label} is not yet complete:`, eventName);
+    logger.info(`A ${eventType} is not yet complete:`, eventName);
     return;
   }
+
   const payload = event[eventName];
   if (!payload) {
     throw new Error(`failed to find payload for event type: ${eventName}`);
   }
   if (payload.conclusion !== "success") {
-    logger.info(`A ${label} completed unsuccessfully:`, eventName);
+    logger.info(`A ${eventType} completed unsuccessfully:`, eventName);
     return;
   }
-  logger.info(`${label} completed successfully`);
+
+  logger.info(`${eventType} completed successfully`);
 
   const eventPullRequest = payload.pull_requests[0];
   if (eventPullRequest != null) {
