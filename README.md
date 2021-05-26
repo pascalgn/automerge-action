@@ -229,6 +229,7 @@ Automerge can be configured to run for these events:
 * `schedule`
 * `status`
 * `workflow_dispatch`
+* `workflow_run`
 
 For more information on when these occur, see the Github documentation on [events that trigger workflows](https://docs.github.com/en/actions/reference/events-that-trigger-workflows) and [their payloads](https://docs.github.com/en/developers/webhooks-and-events/webhook-events-and-payloads).
 
