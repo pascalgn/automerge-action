@@ -24,11 +24,11 @@
     "tmp": "^0.2.1"
   },
   "devDependencies": {
-    "@vercel/ncc": "^0.28.5",
-    "dotenv": "^9.0.2",
-    "eslint": "^7.26.0",
+    "@vercel/ncc": "^0.28.6",
+    "dotenv": "^10.0.0",
+    "eslint": "^7.27.0",
     "eslint-plugin-jest": "^24.3.6",
-    "jest": "^26.6.3",
+    "jest": "^27.0.1",
     "prettier": "^2.3.0"
   },
   "prettier": {

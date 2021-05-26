@@ -1703,7 +1703,7 @@ exports.Octokit = Octokit;
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 
-var isPlainObject = __nccwpck_require__(558);
+var isPlainObject = __nccwpck_require__(3287);
 var universalUserAgent = __nccwpck_require__(5030);
 
 function lowercaseKeys(object) {
@@ -2093,52 +2093,6 @@ exports.endpoint = endpoint;
 
 /***/ }),
 
-/***/ 558:
-/***/ ((__unused_webpack_module, exports) => {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-
-/*!
- * is-plain-object <https://github.com/jonschlinkert/is-plain-object>
- *
- * Copyright (c) 2014-2017, Jon Schlinkert.
- * Released under the MIT License.
- */
-
-function isObject(o) {
-  return Object.prototype.toString.call(o) === '[object Object]';
-}
-
-function isPlainObject(o) {
-  var ctor,prot;
-
-  if (isObject(o) === false) return false;
-
-  // If has modified constructor
-  ctor = o.constructor;
-  if (ctor === undefined) return true;
-
-  // If has modified prototype
-  prot = ctor.prototype;
-  if (isObject(prot) === false) return false;
-
-  // If constructor does not have an Object-specific method
-  if (prot.hasOwnProperty('isPrototypeOf') === false) {
-    return false;
-  }
-
-  // Most likely a plain Object
-  return true;
-}
-
-exports.isPlainObject = isPlainObject;
-
-
-/***/ }),
-
 /***/ 8467:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
@@ -2150,7 +2104,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 var request = __nccwpck_require__(6234);
 var universalUserAgent = __nccwpck_require__(5030);
 
-const VERSION = "4.6.1";
+const VERSION = "4.6.2";
 
 class GraphqlError extends Error {
   constructor(request, response) {
@@ -3773,7 +3727,7 @@ function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'defau
 
 var endpoint = __nccwpck_require__(9440);
 var universalUserAgent = __nccwpck_require__(5030);
-var isPlainObject = __nccwpck_require__(9062);
+var isPlainObject = __nccwpck_require__(3287);
 var nodeFetch = _interopDefault(__nccwpck_require__(467));
 var requestError = __nccwpck_require__(537);
 
@@ -3915,52 +3869,6 @@ const request = withDefaults(endpoint.endpoint, {
 
 exports.request = request;
 //# sourceMappingURL=index.js.map
-
-
-/***/ }),
-
-/***/ 9062:
-/***/ ((__unused_webpack_module, exports) => {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-
-/*!
- * is-plain-object <https://github.com/jonschlinkert/is-plain-object>
- *
- * Copyright (c) 2014-2017, Jon Schlinkert.
- * Released under the MIT License.
- */
-
-function isObject(o) {
-  return Object.prototype.toString.call(o) === '[object Object]';
-}
-
-function isPlainObject(o) {
-  var ctor,prot;
-
-  if (isObject(o) === false) return false;
-
-  // If has modified constructor
-  ctor = o.constructor;
-  if (ctor === undefined) return true;
-
-  // If has modified prototype
-  prot = ctor.prototype;
-  if (isObject(prot) === false) return false;
-
-  // If constructor does not have an Object-specific method
-  if (prot.hasOwnProperty('isPrototypeOf') === false) {
-    return false;
-  }
-
-  // Most likely a plain Object
-  return true;
-}
-
-exports.isPlainObject = isPlainObject;
 
 
 /***/ }),
@@ -13641,6 +13549,52 @@ if (typeof Object.create === 'function') {
 
 /***/ }),
 
+/***/ 3287:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+
+/*!
+ * is-plain-object <https://github.com/jonschlinkert/is-plain-object>
+ *
+ * Copyright (c) 2014-2017, Jon Schlinkert.
+ * Released under the MIT License.
+ */
+
+function isObject(o) {
+  return Object.prototype.toString.call(o) === '[object Object]';
+}
+
+function isPlainObject(o) {
+  var ctor,prot;
+
+  if (isObject(o) === false) return false;
+
+  // If has modified constructor
+  ctor = o.constructor;
+  if (ctor === undefined) return true;
+
+  // If has modified prototype
+  prot = ctor.prototype;
+  if (isObject(prot) === false) return false;
+
+  // If constructor does not have an Object-specific method
+  if (prot.hasOwnProperty('isPrototypeOf') === false) {
+    return false;
+  }
+
+  // Most likely a plain Object
+  return true;
+}
+
+exports.isPlainObject = isPlainObject;
+
+
+/***/ }),
+
 /***/ 6160:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
@@ -18085,7 +18039,7 @@ module.exports = eval("require")("encoding");
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"automerge-action","version":"0.13.0","description":"GitHub action to automatically merge pull requests","main":"lib/api.js","author":"Pascal","license":"MIT","private":true,"bin":{"automerge-action":"./bin/automerge.js"},"scripts":{"test":"jest","it":"node it/it.js","lint":"prettier -l lib/** test/** && eslint .","compile":"ncc build bin/automerge.js --license LICENSE -o dist","prepublish":"yarn lint && yarn test && yarn compile"},"dependencies":{"@octokit/rest":"^18.5.3","argparse":"^2.0.1","fs-extra":"^10.0.0","object-resolve-path":"^1.1.1","tmp":"^0.2.1"},"devDependencies":{"@vercel/ncc":"^0.28.5","dotenv":"^9.0.2","eslint":"^7.26.0","eslint-plugin-jest":"^24.3.6","jest":"^26.6.3","prettier":"^2.3.0"},"prettier":{"trailingComma":"none","arrowParens":"avoid"}}');
+module.exports = JSON.parse('{"name":"automerge-action","version":"0.13.0","description":"GitHub action to automatically merge pull requests","main":"lib/api.js","author":"Pascal","license":"MIT","private":true,"bin":{"automerge-action":"./bin/automerge.js"},"scripts":{"test":"jest","it":"node it/it.js","lint":"prettier -l lib/** test/** && eslint .","compile":"ncc build bin/automerge.js --license LICENSE -o dist","prepublish":"yarn lint && yarn test && yarn compile"},"dependencies":{"@octokit/rest":"^18.5.3","argparse":"^2.0.1","fs-extra":"^10.0.0","object-resolve-path":"^1.1.1","tmp":"^0.2.1"},"devDependencies":{"@vercel/ncc":"^0.28.6","dotenv":"^10.0.0","eslint":"^7.27.0","eslint-plugin-jest":"^24.3.6","jest":"^27.0.1","prettier":"^2.3.0"},"prettier":{"trailingComma":"none","arrowParens":"avoid"}}');
 
 /***/ }),
 
