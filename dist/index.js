@@ -103,9 +103,9 @@ async function handlePullRequestUpdate(context, eventName, event) {
     event.pull_request.base.repo,
     event.pull_request
   );
-
+  const approvalCount = await fetchApprovalReviewCount(context, pullRequest);
   await update(context, pullRequest);
-  await merge(context, pullRequest);
+  await merge(context, pullRequest, approvalCount);
 }
 
 async function handleArbitraryPullRequestUpdate(context, eventData) {
@@ -125,9 +125,9 @@ async function handleArbitraryPullRequestUpdate(context, eventData) {
       pull_number: pullRequestNumber
     });
     logger.trace("Full PR:", pullRequest);
-
+    const approvalCount = await fetchApprovalReviewCount(context, pullRequest);
     await update(context, pullRequest);
-    await merge(context, pullRequest);
+    await merge(context, pullRequest, approvalCount);
   } catch (e) {
     logger.error(
       `Error fetching pull request: ${repoOwner}/${repoName}/${pullRequestNumber}`
@@ -160,9 +160,9 @@ async function handleCheckOrWorkflowUpdate(context, eventName, event) {
     const { octokit } = context;
     const { data: pullRequest } = await octokit.request(eventPullRequest.url);
     logger.trace("PR:", pullRequest);
-
+    const approvalCount = await fetchApprovalReviewCount(context, pullRequest);
     await update(context, pullRequest);
-    await merge(context, pullRequest);
+    await merge(context, pullRequest, approvalCount);
   } else {
     const branchName = payload.head_branch;
     if (branchName != null) {
@@ -186,8 +186,12 @@ async function handlePullRequestReviewUpdate(context, eventName, event) {
         event.pull_request.base.repo,
         event.pull_request
       );
+      const approvalCount = await fetchApprovalReviewCount(
+        context,
+        pullRequest
+      );
       await update(context, pullRequest);
-      await merge(context, pullRequest);
+      await merge(context, pullRequest, approvalCount);
     } else {
       logger.info("Review state is not approved:", review.state);
       logger.info("Action ignored:", eventName, action);
@@ -232,8 +236,12 @@ async function checkPullRequestsForBranches(context, event, branchName) {
   let updated = 0;
   for (const pullRequest of pullRequests) {
     try {
+      const approvalCount = await fetchApprovalReviewCount(
+        context,
+        pullRequest
+      );
       await update(context, pullRequest);
-      await merge(context, pullRequest);
+      await merge(context, pullRequest, approvalCount);
       ++updated;
     } catch (e) {
       logger.error(e);
@@ -265,8 +273,12 @@ async function checkPullRequestsForHeadSha(context, repo, head_sha) {
     }
     foundPR = true;
     try {
+      const approvalCount = await fetchApprovalReviewCount(
+        context,
+        pullRequest
+      );
       await update(context, pullRequest);
-      await merge(context, pullRequest);
+      await merge(context, pullRequest, approvalCount);
       ++updated;
     } catch (e) {
       logger.error(e);
@@ -370,8 +382,12 @@ async function handleScheduleTriggerOrRepositoryDispatch(context) {
   let updated = 0;
   for (const pullRequest of pullRequests) {
     try {
+      const approvalCount = await fetchApprovalReviewCount(
+        context,
+        pullRequest
+      );
       await update(context, pullRequest);
-      await merge(context, pullRequest);
+      await merge(context, pullRequest, approvalCount);
       ++updated;
     } catch (e) {
       logger.error(e);
@@ -391,8 +407,12 @@ async function handleIssueComment(context, eventName, event) {
       logger.info("Comment not on a PR, skipping");
     } else {
       const pullRequest = await fetchPullRequest(context, repository, issue);
+      const approvalCount = await fetchApprovalReviewCount(
+        context,
+        pullRequest
+      );
       await update(context, pullRequest);
-      await merge(context, pullRequest);
+      await merge(context, pullRequest, approvalCount);
     }
   } else {
     logger.info("Action ignored:", eventName, action);
@@ -412,6 +432,23 @@ async function fetchPullRequest(context, repository, issue) {
 
   logger.trace("Full PR:", pullRequest);
   return pullRequest;
+}
+
+async function fetchApprovalReviewCount(context, pullRequest) {
+  const { octokit } = context;
+  const { number } = pullRequest;
+
+  logger.debug("Getting reviews for", number, "...");
+  let { data: reviews } = await octokit.pulls.listReviews({
+    owner: pullRequest.base.repo.owner.login,
+    repo: pullRequest.base.repo.name,
+    pull_number: number
+  });
+
+  reviews = reviews.filter(review => review.state === "APPROVED");
+
+  logger.trace("Approval reviews:", reviews);
+  return reviews.length;
 }
 
 module.exports = { executeLocally, executeGitHubAction };
@@ -579,6 +616,7 @@ function createConfig(env = {}) {
   const mergeFilterAuthor = env.MERGE_FILTER_AUTHOR || "";
   const mergeRetries = parsePositiveInt("MERGE_RETRIES", 6);
   const mergeRetrySleep = parsePositiveInt("MERGE_RETRY_SLEEP", 5000);
+  const mergeRequiredApprovals = parsePositiveInt("MERGE_REQUIRED_APPROVALS", 0);
   const mergeDeleteBranch = env.MERGE_DELETE_BRANCH === "true";
   const mergeMethodLabels = parseMergeMethodLabels(env.MERGE_METHOD_LABELS);
   const mergeMethodLabelRequired = env.MERGE_METHOD_LABEL_REQUIRED === "true";
@@ -602,6 +640,7 @@ function createConfig(env = {}) {
     mergeFilterAuthor,
     mergeRetries,
     mergeRetrySleep,
+    mergeRequiredApprovals,
     mergeDeleteBranch,
     updateLabels,
     updateMethod,
@@ -886,8 +925,8 @@ const NOT_READY = ["dirty", "draft"];
 
 const PR_PROPERTY = new RegExp("{pullRequest.([^}]+)}", "g");
 
-async function merge(context, pullRequest) {
-  if (skipPullRequest(context, pullRequest)) {
+async function merge(context, pullRequest, approvalCount) {
+  if (skipPullRequest(context, pullRequest, approvalCount)) {
     return false;
   }
 
@@ -1034,11 +1073,12 @@ async function deleteBranch(octokit, pullRequest) {
   }
 }
 
-function skipPullRequest(context, pullRequest) {
+function skipPullRequest(context, pullRequest, approvalCount) {
   const {
     config: {
       mergeForks,
       mergeLabels,
+      mergeRequiredApprovals,
       mergeMethodLabelRequired,
       mergeMethodLabels
     }
@@ -1077,6 +1117,11 @@ function skipPullRequest(context, pullRequest) {
       logger.info("Skipping PR merge, required label missing:", required);
       skip = true;
     }
+  }
+
+  if (approvalCount < mergeRequiredApprovals) {
+    logger.info(`Skipping PR merge, missing ${mergeRequiredApprovals - approvalCount} approvals`);
+    skip = true;
   }
 
   const numberMethodLabelsFound = mergeMethodLabels
