@@ -80,7 +80,9 @@ test("Throw if MERGE_COMMIT_MESSAGE_REGEX is invalid", async () => {
   });
 
   // WHEN
-  expect(merge({ config, octokit }, pr, 0)).rejects.toThrow("capturing subgroup");
+  expect(merge({ config, octokit }, pr, 0)).rejects.toThrow(
+    "capturing subgroup"
+  );
 });
 
 test("MERGE_FILTER_AUTHOR can be used to auto merge based on author", async () => {
@@ -227,5 +229,7 @@ test("Multiple merge method labels throw an error", async () => {
   });
 
   // WHEN
-  expect(merge({ config, octokit }, pr, 0)).rejects.toThrow("merge method labels");
+  expect(merge({ config, octokit }, pr, 0)).rejects.toThrow(
+    "merge method labels"
+  );
 });

@@ -63,7 +63,9 @@ test("only merge PRs with required approvals", async () => {
   expect(merged).toEqual(false);
 
   merged = false;
-  octokit.pulls.listReviews.mockReturnValueOnce(({ data: [{state: "APPROVED", user: {login: "approval_user"}}] }));
+  octokit.pulls.listReviews.mockReturnValueOnce({
+    data: [{ state: "APPROVED", user: { login: "approval_user" } }]
+  });
 
   // WHEN
   await api.executeGitHubAction({ config, octokit }, "check_suite", event);
