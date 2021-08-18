@@ -24,7 +24,7 @@ test("MERGE_COMMIT_MESSAGE with nested custom fields", async () => {
   });
 
   // WHEN
-  expect(await merge({ config, octokit }, pr)).toEqual(true);
+  expect(await merge({ config, octokit }, pr)).toEqual("merged");
 
   // THEN
   expect(octokit.pulls.merge).toHaveBeenCalledWith(
@@ -56,7 +56,7 @@ test("MERGE_COMMIT_MESSAGE_REGEX can be used to cut PR body", async () => {
   });
 
   // WHEN
-  expect(await merge({ config, octokit }, pr)).toEqual(true);
+  expect(await merge({ config, octokit }, pr)).toEqual("merged");
 
   // THEN
   expect(octokit.pulls.merge).toHaveBeenCalledWith(
@@ -98,7 +98,7 @@ test("MERGE_FILTER_AUTHOR can be used to auto merge based on author", async () =
   });
 
   // WHEN
-  expect(await merge({ config, octokit }, pr)).toEqual(true);
+  expect(await merge({ config, octokit }, pr)).toEqual("merged");
 });
 
 test("MERGE_FILTER_AUTHOR when not set should not affect anything", async () => {
@@ -115,7 +115,7 @@ test("MERGE_FILTER_AUTHOR when not set should not affect anything", async () => 
   });
 
   // WHEN
-  expect(await merge({ config, octokit }, pr)).toEqual(true);
+  expect(await merge({ config, octokit }, pr)).toEqual("merged");
 });
 
 test("MERGE_FILTER_AUTHOR when set but do not match current author should not merge", async () => {
@@ -133,7 +133,7 @@ test("MERGE_FILTER_AUTHOR when set but do not match current author should not me
   });
 
   // WHEN
-  expect(await merge({ config, octokit }, pr)).toEqual(false);
+  expect(await merge({ config, octokit }, pr)).toEqual("author_filtered");
 });
 
 test("Merge method can be set by env variable", async () => {
@@ -145,7 +145,7 @@ test("Merge method can be set by env variable", async () => {
   });
 
   // WHEN
-  expect(await merge({ config, octokit }, pr)).toEqual(true);
+  expect(await merge({ config, octokit }, pr)).toEqual("merged");
   expect(mergeMethod).toEqual("rebase");
 });
 
@@ -161,7 +161,7 @@ test("Merge method can be set by a merge method label", async () => {
   });
 
   // WHEN
-  expect(await merge({ config, octokit }, pr)).toEqual(true);
+  expect(await merge({ config, octokit }, pr)).toEqual("merged");
   expect(mergeMethod).toEqual("squash");
 });
 
@@ -178,7 +178,7 @@ test("Merge method can be required", async () => {
   });
 
   // WHEN
-  expect(await merge({ config, octokit }, pr)).toEqual(true);
+  expect(await merge({ config, octokit }, pr)).toEqual("merged");
   expect(mergeMethod).toEqual("squash");
 });
 
@@ -195,7 +195,7 @@ test("Missing require merge method skips PR", async () => {
   });
 
   // WHEN
-  expect(await merge({ config, octokit }, pr)).toEqual(false);
+  expect(await merge({ config, octokit }, pr)).toEqual("skipped");
 });
 
 test("Merge method doesn't have to be required", async () => {
@@ -211,7 +211,7 @@ test("Merge method doesn't have to be required", async () => {
   });
 
   // WHEN
-  expect(await merge({ config, octokit }, pr)).toEqual(true);
+  expect(await merge({ config, octokit }, pr)).toEqual("merged");
   expect(mergeMethod).toEqual("merge");
 });
 
