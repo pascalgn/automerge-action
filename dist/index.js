@@ -7,9 +7,14 @@
 
 const process = __nccwpck_require__(1765);
 
-const { ClientError, logger } = __nccwpck_require__(6979);
+const {
+  ClientError,
+  logger,
+  RESULT_NOT_READY,
+  RESULT_SKIPPED
+} = __nccwpck_require__(6979);
 const { update } = __nccwpck_require__(3056);
-const { merge, RESULT_NOT_READY, RESULT_SKIPPED } = __nccwpck_require__(452);
+const { merge } = __nccwpck_require__(452);
 const { branchName } = __nccwpck_require__(4024);
 
 const URL_REGEXP =
@@ -460,6 +465,12 @@ const process = __nccwpck_require__(1765);
 const fse = __nccwpck_require__(5630);
 const tmp = __nccwpck_require__(8517);
 
+const RESULT_SKIPPED = "skipped";
+const RESULT_NOT_READY = "not_ready";
+const RESULT_AUTHOR_FILTERED = "author_filtered";
+const RESULT_MERGE_FAILED = "merge_failed";
+const RESULT_MERGED = "merged";
+
 class ClientError extends Error {}
 
 class TimeoutError extends Error {}
@@ -652,6 +663,7 @@ function tmpdir(callback) {
       await fse.remove(path);
     }
   }
+
   return new Promise((resolve, reject) => {
     tmp.dir((err, path) => {
       if (err) {
@@ -707,7 +719,12 @@ module.exports = {
   tmpdir,
   inspect,
   retry,
-  sleep
+  sleep,
+  RESULT_SKIPPED,
+  RESULT_NOT_READY,
+  RESULT_AUTHOR_FILTERED,
+  RESULT_MERGE_FAILED,
+  RESULT_MERGED
 };
 
 
@@ -911,19 +928,20 @@ module.exports = {
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 const resolvePath = __nccwpck_require__(2983);
-
-const { logger, retry } = __nccwpck_require__(6979);
+const {
+  RESULT_MERGED,
+  RESULT_MERGE_FAILED,
+  RESULT_AUTHOR_FILTERED,
+  RESULT_NOT_READY,
+  RESULT_SKIPPED,
+  logger,
+  retry
+} = __nccwpck_require__(6979);
 
 const MAYBE_READY = ["clean", "has_hooks", "unknown", "unstable"];
 const NOT_READY = ["dirty", "draft"];
 
 const PR_PROPERTY = new RegExp("{pullRequest.([^}]+)}", "g");
-
-const RESULT_SKIPPED = "skipped";
-const RESULT_NOT_READY = "not_ready";
-const RESULT_AUTHOR_FILTERED = "author_filtered";
-const RESULT_MERGE_FAILED = "merge_failed";
-const RESULT_MERGED = "merged";
 
 async function merge(context, pullRequest) {
   if (skipPullRequest(context, pullRequest)) {
@@ -1274,14 +1292,7 @@ function checkMergeError(e) {
   }
 }
 
-module.exports = {
-  merge,
-  RESULT_SKIPPED,
-  RESULT_NOT_READY,
-  RESULT_AUTHOR_FILTERED,
-  RESULT_MERGE_FAILED,
-  RESULT_MERGED
-};
+module.exports = { merge };
 
 
 /***/ }),
@@ -18549,14 +18560,6 @@ function wrappy (fn, cb) {
 
 /***/ }),
 
-/***/ 760:
-/***/ ((module) => {
-
-module.exports = eval("require")("./merge");
-
-
-/***/ }),
-
 /***/ 2877:
 /***/ ((module) => {
 
@@ -18733,8 +18736,6 @@ var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
 (() => {
 
-const { RESULT_SKIPPED } = __nccwpck_require__(760);
-
 const process = __nccwpck_require__(1765);
 
 const fse = __nccwpck_require__(5630);
@@ -18742,7 +18743,12 @@ const { ArgumentParser } = __nccwpck_require__(1515);
 const { Octokit } = __nccwpck_require__(5375);
 const actionsCore = __nccwpck_require__(2186);
 
-const { ClientError, logger, createConfig } = __nccwpck_require__(6979);
+const {
+  ClientError,
+  logger,
+  createConfig,
+  RESULT_SKIPPED
+} = __nccwpck_require__(6979);
 const { executeLocally, executeGitHubAction } = __nccwpck_require__(8947);
 
 const pkg = __nccwpck_require__(306);

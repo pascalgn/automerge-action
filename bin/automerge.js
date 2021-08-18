@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 
-const { RESULT_SKIPPED } = require("./merge");
-
 const process = require("process");
 
 const fse = require("fs-extra");
@@ -9,7 +7,12 @@ const { ArgumentParser } = require("argparse");
 const { Octokit } = require("@octokit/rest");
 const actionsCore = require("@actions/core");
 
-const { ClientError, logger, createConfig } = require("../lib/common");
+const {
+  ClientError,
+  logger,
+  createConfig,
+  RESULT_SKIPPED
+} = require("../lib/common");
 const { executeLocally, executeGitHubAction } = require("../lib/api");
 
 const pkg = require("../package.json");
