@@ -5,8 +5,14 @@ const process = require("process");
 const fse = require("fs-extra");
 const { ArgumentParser } = require("argparse");
 const { Octokit } = require("@octokit/rest");
+const actionsCore = require("@actions/core");
 
-const { ClientError, logger, createConfig } = require("../lib/common");
+const {
+  ClientError,
+  logger,
+  createConfig,
+  RESULT_SKIPPED
+} = require("../lib/common");
 const { executeLocally, executeGitHubAction } = require("../lib/api");
 
 const pkg = require("../package.json");
@@ -62,8 +68,9 @@ async function main() {
 
   const context = { token, octokit, config };
 
+  let results;
   if (args.url) {
-    await executeLocally(context, args.url);
+    results = await executeLocally(context, args.url);
   } else {
     const eventPath = env("GITHUB_EVENT_PATH");
     const eventName = env("GITHUB_EVENT_NAME");
@@ -71,8 +78,18 @@ async function main() {
     const eventDataStr = await fse.readFile(eventPath, "utf8");
     const eventData = JSON.parse(eventDataStr);
 
-    await executeGitHubAction(context, eventName, eventData);
+    results = await executeGitHubAction(context, eventName, eventData);
+    if (Array.isArray(results)) {
+      logger.info(
+        "got more than one result, setting only first result for action step output"
+      );
+      results = results[0];
+    }
+    const { mergeResult, pullRequestNumber } = results || {};
+    actionsCore.setOutput("mergeResult", mergeResult || RESULT_SKIPPED);
+    actionsCore.setOutput("pullRequestNumber", pullRequestNumber || 0);
   }
+  logger.info("Auto-merge action result(s):", results);
 }
 
 function checkOldConfig() {
