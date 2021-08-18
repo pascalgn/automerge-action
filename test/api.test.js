@@ -41,7 +41,7 @@ test("only merge PRs with required approvals", async () => {
   pr.head.sha = head_sha;
 
   const config = createConfig({});
-  config.mergeRequiredApprovals = 1;
+  config.mergeRequiredApprovals = 2; // let's only merge, if there are two independent approvals
 
   let merged = false;
   octokit = {
@@ -60,14 +60,29 @@ test("only merge PRs with required approvals", async () => {
 
   // WHEN
   await api.executeGitHubAction({ config, octokit }, "check_suite", event);
-  expect(merged).toEqual(false);
+  expect(merged).toEqual(false); // if there's no approval, it should fail
 
   merged = false;
   octokit.pulls.listReviews.mockReturnValueOnce({
-    data: [{ state: "APPROVED", user: { login: "approval_user" } }]
+    data: [
+      { state: "APPROVED", user: { login: "approval_user" } },
+      { state: "APPROVED", user: { login: "approval_user2" } }
+    ]
   });
 
   // WHEN
   await api.executeGitHubAction({ config, octokit }, "check_suite", event);
-  expect(merged).toEqual(true);
+  expect(merged).toEqual(true); // if there are two approvals, it should succeed
+
+  merged = false;
+  octokit.pulls.listReviews.mockReturnValueOnce({
+    data: [
+      { state: "APPROVED", user: { login: "approval_user" } },
+      { state: "APPROVED", user: { login: "approval_user" } }
+    ]
+  });
+
+  // WHEN a user has given
+  await api.executeGitHubAction({ config, octokit }, "check_suite", event);
+  expect(merged).toEqual(false); // if there are only two approvals from the same user, it should fail
 });
