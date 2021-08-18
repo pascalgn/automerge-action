@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { RESULT_SKIPPED } = require("./results");
+const { RESULT_SKIPPED } = require("./merge");
 
 const process = require("process");
 

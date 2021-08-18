@@ -5,13 +5,11 @@
 /***/ 8947:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
-const { RESULT_NOT_READY, RESULT_SKIPPED } = __nccwpck_require__(8100);
-
 const process = __nccwpck_require__(1765);
 
 const { ClientError, logger } = __nccwpck_require__(6979);
 const { update } = __nccwpck_require__(3056);
-const { merge } = __nccwpck_require__(452);
+const { merge, RESULT_NOT_READY, RESULT_SKIPPED } = __nccwpck_require__(452);
 const { branchName } = __nccwpck_require__(4024);
 
 const URL_REGEXP =
@@ -913,13 +911,6 @@ module.exports = {
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 const resolvePath = __nccwpck_require__(2983);
-const {
-  RESULT_SKIPPED,
-  RESULT_NOT_READY,
-  RESULT_MERGED,
-  RESULT_MERGE_FAILED,
-  RESULT_AUTHOR_FILTERED
-} = __nccwpck_require__(8100);
 
 const { logger, retry } = __nccwpck_require__(6979);
 
@@ -927,6 +918,12 @@ const MAYBE_READY = ["clean", "has_hooks", "unknown", "unstable"];
 const NOT_READY = ["dirty", "draft"];
 
 const PR_PROPERTY = new RegExp("{pullRequest.([^}]+)}", "g");
+
+const RESULT_SKIPPED = "skipped";
+const RESULT_NOT_READY = "not_ready";
+const RESULT_AUTHOR_FILTERED = "author_filtered";
+const RESULT_MERGE_FAILED = "merge_failed";
+const RESULT_MERGED = "merged";
 
 async function merge(context, pullRequest) {
   if (skipPullRequest(context, pullRequest)) {
@@ -1277,21 +1274,8 @@ function checkMergeError(e) {
   }
 }
 
-module.exports = { merge };
-
-
-/***/ }),
-
-/***/ 8100:
-/***/ ((module) => {
-
-const RESULT_SKIPPED = "skipped";
-const RESULT_NOT_READY = "not_ready";
-const RESULT_AUTHOR_FILTERED = "author_filtered";
-const RESULT_MERGE_FAILED = "merge_failed";
-const RESULT_MERGED = "merged";
-
 module.exports = {
+  merge,
   RESULT_SKIPPED,
   RESULT_NOT_READY,
   RESULT_AUTHOR_FILTERED,
@@ -18565,10 +18549,10 @@ function wrappy (fn, cb) {
 
 /***/ }),
 
-/***/ 2952:
+/***/ 760:
 /***/ ((module) => {
 
-module.exports = eval("require")("./results");
+module.exports = eval("require")("./merge");
 
 
 /***/ }),
@@ -18749,7 +18733,7 @@ var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
 (() => {
 
-const { RESULT_SKIPPED } = __nccwpck_require__(2952);
+const { RESULT_SKIPPED } = __nccwpck_require__(760);
 
 const process = __nccwpck_require__(1765);
 
