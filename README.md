@@ -233,6 +233,40 @@ Automerge can be configured to run for these events:
 
 For more information on when these occur, see the Github documentation on [events that trigger workflows](https://docs.github.com/en/actions/reference/events-that-trigger-workflows) and [their payloads](https://docs.github.com/en/developers/webhooks-and-events/webhook-events-and-payloads).
 
+## Using Step Output
+
+The action will provide two [outputs](https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idoutputs) to the Github action context:
+
+* `mergeResult` - The result from the action run, could be one of `skipped`, `not_ready`, `author_filtered`, `merge_failed`, `merged`
+* `pullRequestNumber` - If one or more pull requests were matched in the action this value will hold the Github number of one of them
+
+Note that in order to access these outputs, your automerge step must define an `id`.
+
+These values could be used to run additional action steps in accordance to the automerge result.
+
+This should be especially useful when using the built in `GITHUB_TOKEN`, see [Limitations](#Limitations).
+
+For example:
+
+```yaml
+name: automerge
+on:
+  ...
+jobs:
+  automerge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: automerge
+        id: automerge
+        uses: "pascalgn/automerge-action@v0.14.2"
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+      - name: feedback
+        if: steps.automerge.outputs.mergeResult == "merged"
+        run: |
+          echo "Pull request ${{ steps.automerge.outputs.pullRequestNumber }} was auto merged!"
+```
+
 ## Limitations
 
 - When a pull request is merged by this action, the merge will not trigger other GitHub workflows.
