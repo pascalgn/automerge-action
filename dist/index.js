@@ -950,12 +950,7 @@ async function merge(context, pullRequest, approvalCount) {
     }
   } = context;
 
-  const ready = await waitUntilReady(
-    octokit,
-    pullRequest,
-    mergeRetries,
-    mergeRetrySleep
-  );
+  const ready = await waitUntilReady(pullRequest, context);
   if (!ready) {
     return false;
   }
@@ -1147,20 +1142,32 @@ function skipPullRequest(context, pullRequest, approvalCount) {
   return skip;
 }
 
-function waitUntilReady(octokit, pullRequest, mergeRetries, mergeRetrySleep) {
+function waitUntilReady(pullRequest, context) {
+  const {
+    octokit,
+    config: { mergeRetries, mergeRetrySleep }
+  } = context;
+
   return retry(
     mergeRetries,
     mergeRetrySleep,
-    () => checkReady(pullRequest),
+    () => checkReady(pullRequest, context),
     async () => {
       const pr = await getPullRequest(octokit, pullRequest);
-      return checkReady(pr);
+      return checkReady(pr, context);
     },
     () => logger.info(`PR not ready to be merged after ${mergeRetries} tries`)
   );
 }
 
-function checkReady(pullRequest) {
+function checkReady(pullRequest, context) {
+  if (skipPullRequest(context, pullRequest)) {
+    return "failure";
+  }
+  return mergeable(pullRequest);
+}
+
+function mergeable(pullRequest) {
   const { mergeable_state } = pullRequest;
   if (mergeable_state == null || MAYBE_READY.includes(mergeable_state)) {
     logger.info("PR is probably ready: mergeable_state:", mergeable_state);
@@ -18096,7 +18103,7 @@ module.exports = eval("require")("encoding");
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"automerge-action","version":"0.13.0","description":"GitHub action to automatically merge pull requests","main":"lib/api.js","author":"Pascal","license":"MIT","private":true,"bin":{"automerge-action":"./bin/automerge.js"},"scripts":{"test":"jest","it":"node it/it.js","lint":"prettier -l lib/** test/** && eslint .","compile":"ncc build bin/automerge.js --license LICENSE -o dist","prepublish":"yarn lint && yarn test && yarn compile"},"dependencies":{"@octokit/rest":"^18.5.3","argparse":"^2.0.1","fs-extra":"^10.0.0","object-resolve-path":"^1.1.1","tmp":"^0.2.1"},"devDependencies":{"@vercel/ncc":"^0.28.6","dotenv":"^10.0.0","eslint":"^7.27.0","eslint-plugin-jest":"^24.3.6","jest":"^27.0.1","prettier":"^2.3.0"},"prettier":{"trailingComma":"none","arrowParens":"avoid"}}');
+module.exports = JSON.parse('{"name":"automerge-action","version":"0.13.0","description":"GitHub action to automatically merge pull requests","main":"lib/api.js","author":"Pascal","license":"MIT","private":true,"bin":{"automerge-action":"./bin/automerge.js"},"scripts":{"test":"jest","it":"node it/it.js","lint":"prettier -lw lib/** test/** && eslint .","compile":"ncc build bin/automerge.js --license LICENSE -o dist","prepublish":"yarn lint && yarn test && yarn compile"},"dependencies":{"@octokit/rest":"^18.5.3","argparse":"^2.0.1","fs-extra":"^10.0.0","object-resolve-path":"^1.1.1","tmp":"^0.2.1"},"devDependencies":{"@vercel/ncc":"^0.28.6","dotenv":"^10.0.0","eslint":"^7.27.0","eslint-plugin-jest":"^24.3.6","jest":"^27.0.1","prettier":"^2.3.0"},"prettier":{"trailingComma":"none","arrowParens":"avoid"}}');
 
 /***/ }),
 
