@@ -5,7 +5,8 @@ const { tmpdir } = require("../lib/common");
 
 async function init(dir) {
   await fse.mkdirs(dir);
-  await git.git(dir, "init", "-b", "main");
+  await git.git(dir, "init");
+  await git.git(dir, "checkout", "-b", "main");
 }
 
 async function commit(dir, message = "C%d", count = 1) {
