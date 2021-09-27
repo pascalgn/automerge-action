@@ -610,6 +610,7 @@ function createConfig(env = {}) {
   const mergeDeleteBranch = env.MERGE_DELETE_BRANCH === "true";
   const mergeMethodLabels = parseMergeMethodLabels(env.MERGE_METHOD_LABELS);
   const mergeMethodLabelRequired = env.MERGE_METHOD_LABEL_REQUIRED === "true";
+  const mergeCustomBehavior = env.MERGE_CUSTOM_BEHAVIOR || "";
 
   const updateLabels = parseMergeLabels(env.UPDATE_LABELS, "automerge");
   const updateMethod = env.UPDATE_METHOD || "merge";
@@ -632,6 +633,7 @@ function createConfig(env = {}) {
     mergeRetrySleep,
     mergeRequiredApprovals,
     mergeDeleteBranch,
+    mergeCustomBehavior,
     updateLabels,
     updateMethod,
     updateRetries,
@@ -936,7 +938,8 @@ async function merge(context, pullRequest, approvalCount) {
       mergeFilterAuthor,
       mergeRemoveLabels,
       mergeRetries,
-      mergeRetrySleep
+      mergeRetrySleep,
+      mergeCustomBehavior
     }
   } = context;
 
@@ -970,7 +973,8 @@ async function merge(context, pullRequest, approvalCount) {
   const mergeMethod = getMergeMethod(
     defaultMergeMethod,
     mergeMethodLabels,
-    pullRequest
+    pullRequest,
+    mergeCustomBehavior
   );
   const merged = await tryMerge(
     octokit,
@@ -1219,7 +1223,12 @@ function tryMerge(
   );
 }
 
-function getMergeMethod(defaultMergeMethod, mergeMethodLabels, pullRequest) {
+function getMergeMethod(
+  defaultMergeMethod,
+  mergeMethodLabels,
+  pullRequest,
+  mergeCustomBehavior
+) {
   const foundMergeMethodLabels = pullRequest.labels.flatMap(l =>
     mergeMethodLabels.filter(ml => ml.label === l.name)
   );
@@ -1235,6 +1244,17 @@ function getMergeMethod(defaultMergeMethod, mergeMethodLabels, pullRequest) {
       );
     }
     return first.method;
+  }
+  if (mergeCustomBehavior === "tada-server") {
+    if (pullRequest.title.includes("스머금")) {
+      return "merge";
+    }
+    if (["m2s", "s2r", "r2m"].some(it => pullRequest.head.ref.includes(it))) {
+      return "merge";
+    }
+    if (["master", "staging", "release"].includes(pullRequest.head.ref)) {
+      return "merge";
+    }
   }
   return defaultMergeMethod;
 }

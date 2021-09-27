@@ -23,6 +23,7 @@ test("createConfig", () => {
     mergeRetrySleep: 5000,
     mergeRequiredApprovals: 0,
     mergeRemoveLabels: [""],
+    mergeCustomBehavior: "",
     updateMethod: "merge",
     updateLabels: {
       blocking: ["block1", "block2"],
@@ -59,6 +60,7 @@ test("createConfig with arbitrary pull request (as string)", () => {
     mergeRetrySleep: 5000,
     mergeRequiredApprovals: 0,
     mergeRemoveLabels: [""],
+    mergeCustomBehavior: "",
     updateMethod: "merge",
     updateLabels: {
       blocking: ["block1", "block2"],
@@ -97,6 +99,7 @@ test("createConfig with arbitrary pull request (as number)", () => {
     mergeRetrySleep: 5000,
     mergeRequiredApprovals: 0,
     mergeRemoveLabels: [""],
+    mergeCustomBehavior: "",
     updateMethod: "merge",
     updateLabels: {
       blocking: ["block1", "block2"],
@@ -135,6 +138,7 @@ test("createConfig with arbitrary pull request in another repo", () => {
     mergeRetrySleep: 5000,
     mergeRequiredApprovals: 0,
     mergeRemoveLabels: [""],
+    mergeCustomBehavior: "",
     updateMethod: "merge",
     updateLabels: {
       blocking: ["block1", "block2"],
