@@ -30,7 +30,7 @@ test("MERGE_COMMIT_MESSAGE with nested custom fields", async () => {
   expect(octokit.pulls.merge).toHaveBeenCalledWith(
     expect.objectContaining({
       commit_title: "This is the PR's title @author",
-      commit_message: "",
+      // commit_message: "",
       pull_number: 1,
       repo: "repository",
       sha: "2c3b4d5"
@@ -63,7 +63,7 @@ test("MERGE_COMMIT_MESSAGE_REGEX can be used to cut PR body", async () => {
     expect.objectContaining({
       commit_title:
         "Update README\n\nThis is the meaty part of the PR body.\nIt also matches newlines.",
-      commit_message: "",
+      // commit_message: "",
       pull_number: 1,
       repo: "repository",
       sha: "2c3b4d5"
