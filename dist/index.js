@@ -517,11 +517,8 @@ function createConfig(env = {}) {
     };
   }
 
-  function parseMergeMethodLabels(str) {
-    if (!str) {
-      return [];
-    }
-    return str.split(",").map(lm => {
+  function parseLabelMethods(str) {
+    return (str ? str.split(",") : []).map(lm => {
       const [label, method] = lm.split("=");
       if (!label || !method) {
         throw new Error(
@@ -532,8 +529,8 @@ function createConfig(env = {}) {
     });
   }
 
-  function parseMergeRemoveLabels(str, defaultValue) {
-    return (str == null ? defaultValue : str).split(",").map(s => s.trim());
+  function parseArray(str) {
+    return str ? str.split(",") : [];
   }
 
   function parsePositiveInt(name, defaultValue) {
@@ -595,7 +592,7 @@ function createConfig(env = {}) {
   }
 
   const mergeLabels = parseMergeLabels(env.MERGE_LABELS, "automerge");
-  const mergeRemoveLabels = parseMergeRemoveLabels(env.MERGE_REMOVE_LABELS, "");
+  const mergeRemoveLabels = parseLabelMethods(env.MERGE_REMOVE_LABELS);
   const mergeMethod = env.MERGE_METHOD || "merge";
   const mergeForks = env.MERGE_FORKS !== "false";
   const mergeCommitMessage = env.MERGE_COMMIT_MESSAGE || "automatic";
@@ -608,7 +605,8 @@ function createConfig(env = {}) {
     0
   );
   const mergeDeleteBranch = env.MERGE_DELETE_BRANCH === "true";
-  const mergeMethodLabels = parseMergeMethodLabels(env.MERGE_METHOD_LABELS);
+  const mergeDeleteBranchFilter = parseArray(env.MERGE_DELETE_BRANCH_FILTER);
+  const mergeMethodLabels = parseLabelMethods(env.MERGE_METHOD_LABELS);
   const mergeMethodLabelRequired = env.MERGE_METHOD_LABEL_REQUIRED === "true";
 
   const updateLabels = parseMergeLabels(env.UPDATE_LABELS, "automerge");
@@ -632,6 +630,7 @@ function createConfig(env = {}) {
     mergeRetrySleep,
     mergeRequiredApprovals,
     mergeDeleteBranch,
+    mergeDeleteBranchFilter,
     updateLabels,
     updateMethod,
     updateRetries,
@@ -995,7 +994,11 @@ async function merge(context, pullRequest, approvalCount) {
 
   if (context.config.mergeDeleteBranch) {
     try {
-      await deleteBranch(octokit, pullRequest);
+      await deleteBranch(
+        octokit,
+        pullRequest,
+        context.config.mergeDeleteBranchFilter
+      );
     } catch (e) {
       logger.info("Failed to delete branch:", e.message);
     }
@@ -1030,7 +1033,7 @@ async function removeLabels(octokit, pullRequest, mergeRemoveLabels) {
   logger.info("Removed labels:", labelNames);
 }
 
-async function deleteBranch(octokit, pullRequest) {
+async function deleteBranch(octokit, pullRequest, mergeDeleteBranchFilter) {
   if (pullRequest.head.repo.full_name !== pullRequest.base.repo.full_name) {
     logger.info("Branch is from external repository, skipping delete");
     return;
@@ -1050,7 +1053,6 @@ async function deleteBranch(octokit, pullRequest) {
     const { data: protectionRules } = await octokit.repos.getBranchProtection(
       branchQuery
     );
-
     if (
       protectionRules.allow_deletions &&
       !protectionRules.allow_deletions.enabled
@@ -1058,16 +1060,20 @@ async function deleteBranch(octokit, pullRequest) {
       logger.info("Branch is protected and cannot be deleted:", branch.name);
       return;
     }
+  } else if (mergeDeleteBranchFilter.includes(branch.name)) {
+    logger.info(
+      "Branch is in filter list and will not be deleted:",
+      branch.name
+    );
+  } else {
+    logger.debug("Deleting branch", branch.name, "...");
+    await octokit.git.deleteRef({
+      owner: pullRequest.head.repo.owner.login,
+      repo: pullRequest.head.repo.name,
+      ref: `heads/${branch.name}`
+    });
+    logger.info("Merged branch has been deleted:", branch.name);
   }
-
-  logger.debug("Deleting branch", branch.name, "...");
-  await octokit.git.deleteRef({
-    owner: pullRequest.head.repo.owner.login,
-    repo: pullRequest.head.repo.name,
-    ref: `heads/${branch.name}`
-  });
-
-  logger.info("Merged branch has been deleted:", branch.name);
 }
 
 function skipPullRequest(context, pullRequest, approvalCount) {

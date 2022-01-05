@@ -151,6 +151,10 @@ The following merge options are supported:
   repositories. Set this option to `true` to automatically delete branches
   after they have been merged. The default value is `false`.
 
+- `MERGE_DELETE_BRANCH_FILTER`: A comma-separated list of branches that will not
+  be deleted. This is not the list of GitHub's protected branches, which are never
+  deleted, but an additional list of branches to protect. The default value is `""`.
+
 The following update options are supported:
 
 - `UPDATE_LABELS`: The labels that need to be present for a pull request to be
@@ -273,4 +277,4 @@ Install dependencies with `yarn`, and finally run `yarn it` (or `npm run it`).
 
 ## License
 
-[MIT](LICENSE)
+[MIT](./LICENSE)
