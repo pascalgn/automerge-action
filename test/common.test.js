@@ -21,6 +21,7 @@ test("createConfig", () => {
     mergeDeleteBranch: false,
     mergeRetries: 3,
     mergeRetrySleep: 5000,
+    mergeRequiredApprovals: 0,
     mergeRemoveLabels: [""],
     updateMethod: "merge",
     updateLabels: {
@@ -56,6 +57,7 @@ test("createConfig with arbitrary pull request (as string)", () => {
     mergeDeleteBranch: false,
     mergeRetries: 3,
     mergeRetrySleep: 5000,
+    mergeRequiredApprovals: 0,
     mergeRemoveLabels: [""],
     updateMethod: "merge",
     updateLabels: {
@@ -93,6 +95,7 @@ test("createConfig with arbitrary pull request (as number)", () => {
     mergeDeleteBranch: false,
     mergeRetries: 3,
     mergeRetrySleep: 5000,
+    mergeRequiredApprovals: 0,
     mergeRemoveLabels: [""],
     updateMethod: "merge",
     updateLabels: {
@@ -130,6 +133,7 @@ test("createConfig with arbitrary pull request in another repo", () => {
     mergeDeleteBranch: false,
     mergeRetries: 3,
     mergeRetrySleep: 5000,
+    mergeRequiredApprovals: 0,
     mergeRemoveLabels: [""],
     updateMethod: "merge",
     updateLabels: {

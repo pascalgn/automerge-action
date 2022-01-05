@@ -62,7 +62,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: automerge
-        uses: "pascalgn/automerge-action@v0.14.2"
+        uses: "pascalgn/automerge-action@v0.14.3"
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 ```
@@ -145,6 +145,8 @@ The following merge options are supported:
   The default is `5000` (5 seconds) and setting it to `0` disables sleeping
   between retries.
 
+- `MERGE_REQUIRED_APPROVALS`: Count of required approvals. The default is `0`.
+
 - `MERGE_DELETE_BRANCH`: Automatic deletion of branches does not work for all
   repositories. Set this option to `true` to automatically delete branches
   after they have been merged. The default value is `false`.
@@ -209,6 +211,7 @@ You can configure the environment variables in the workflow file like this:
           MERGE_FORKS: "false"
           MERGE_RETRIES: "6"
           MERGE_RETRY_SLEEP: "10000"
+          MERGE_REQUIRED_APPROVALS: "0"
           UPDATE_LABELS: ""
           UPDATE_METHOD: "rebase"
           PULL_REQUEST: "1234"
