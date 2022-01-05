@@ -4,7 +4,8 @@ test("createConfig", () => {
   const config = createConfig({
     UPDATE_LABELS: " required1,! block1, ! ,required2, !block2 ",
     MERGE_LABELS: "",
-    MERGE_RETRIES: "3"
+    MERGE_RETRIES: "3",
+    BASE_BRANCHES: "dev,main"
   });
   const expected = {
     mergeMethod: "merge",
@@ -30,6 +31,7 @@ test("createConfig", () => {
     },
     updateRetries: 1,
     updateRetrySleep: 5000,
+    baseBranches: ["dev", "main"],
     pullRequest: null
   };
   expect(config).toEqual(expected);
@@ -66,6 +68,7 @@ test("createConfig with arbitrary pull request (as string)", () => {
     },
     updateRetries: 1,
     updateRetrySleep: 5000,
+    baseBranches: [],
     pullRequest: {
       pullRequestNumber: 144
     }
@@ -104,6 +107,7 @@ test("createConfig with arbitrary pull request (as number)", () => {
     },
     updateRetries: 1,
     updateRetrySleep: 5000,
+    baseBranches: [],
     pullRequest: {
       pullRequestNumber: 144
     }
@@ -142,6 +146,7 @@ test("createConfig with arbitrary pull request in another repo", () => {
     },
     updateRetries: 1,
     updateRetrySleep: 5000,
+    baseBranches: [],
     pullRequest: {
       repoOwner: "pascalgn",
       repoName: "automerge-action",

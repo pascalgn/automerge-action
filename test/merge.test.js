@@ -233,3 +233,37 @@ test("Multiple merge method labels throw an error", async () => {
     "merge method labels"
   );
 });
+
+test("Base branch is listed then PR is merged", async () => {
+  // GIVEN
+  const pr = pullRequest();
+  pr.labels = [{ name: "mergeme" }];
+
+  const config = createConfig({
+    MERGE_METHOD_LABELS: "automerge=merge,autosquash=squash,autorebase=rebase",
+    MERGE_METHOD_LABEL_REQUIRED: "false",
+    MERGE_METHOD: "merge",
+    MERGE_LABELS: "mergeme",
+    BASE_BRANCHES: "main,master,dev"
+  });
+
+  // WHEN
+  expect(await merge({ config, octokit }, pr, 0)).toEqual("merged");
+});
+
+test("Base branch not listed then PR is skipped", async () => {
+  // GIVEN
+  const pr = pullRequest();
+  pr.labels = [{ name: "mergeme" }];
+
+  const config = createConfig({
+    MERGE_METHOD_LABELS: "automerge=merge,autosquash=squash,autorebase=rebase",
+    MERGE_METHOD_LABEL_REQUIRED: "false",
+    MERGE_METHOD: "merge",
+    MERGE_LABELS: "mergeme",
+    BASE_BRANCHES: "main,dev"
+  });
+
+  // WHEN
+  expect(await merge({ config, octokit }, pr, 0)).toEqual("skipped");
+});
