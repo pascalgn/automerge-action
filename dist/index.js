@@ -87,7 +87,7 @@ async function updateAndMerge(context, pullRequest) {
   const approvalCount = await fetchApprovalReviewCount(context, pullRequest);
 
   await update(context, pullRequest);
-  await merge(context, pullRequest, approvalCount);
+  return await merge(context, pullRequest, approvalCount);
 }
 
 async function executeGitHubAction(context, eventName, eventData) {
