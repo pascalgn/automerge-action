@@ -7,6 +7,8 @@
 
 const process = __nccwpck_require__(7282);
 
+const { setOutput } = __nccwpck_require__(2186);
+
 const {
   ClientError,
   logger,
@@ -38,8 +40,6 @@ async function executeLocally(context, url) {
   const { octokit } = context;
 
   const m = url.match(URL_REGEXP);
-  let mergeResult;
-  let pullRequestNumber;
   if (m && m[3] === "pull") {
     logger.debug("Getting PR data...");
     const { data: pull_request } = await octokit.pulls.get({
@@ -53,11 +53,7 @@ async function executeLocally(context, url) {
       pull_request
     };
 
-    ({ mergeResult, pullRequestNumber } = await executeGitHubAction(
-      context,
-      "pull_request",
-      event
-    ));
+    return executeGitHubAction(context, "pull_request", event);
   } else if (m && m[3] === "tree") {
     const event = {
       ref: `refs/heads/${m[4]}`,
@@ -69,21 +65,32 @@ async function executeLocally(context, url) {
       }
     };
 
-    ({ mergeResult, pullRequestNumber } = await executeGitHubAction(
-      context,
-      "push",
-      event
-    ));
+    return executeGitHubAction(context, "push", event);
   } else {
     throw new ClientError(`invalid URL: ${url}`);
   }
-
-  logger.info("pull request:", pullRequestNumber, "merge result:", mergeResult);
-
-  return mergeResult;
 }
 
 async function executeGitHubAction(context, eventName, eventData) {
+  const result = await executeGitHubActionImpl(context, eventName, eventData);
+  logger.info("Action result:", result);
+
+  let singleResult;
+  if (Array.isArray(result)) {
+    logger.info("More than one result, using  first result for action output");
+    singleResult = result[0];
+  } else if (result != null) {
+    singleResult = result;
+  } else {
+    throw new Error("invalid result!");
+  }
+
+  const { mergeResult, pullRequestNumber } = singleResult || {};
+  setOutput("mergeResult", mergeResult || RESULT_SKIPPED);
+  setOutput("pullRequestNumber", pullRequestNumber || 0);
+}
+
+async function executeGitHubActionImpl(context, eventName, eventData) {
   logger.info("Event name:", eventName);
   logger.trace("Event data:", eventData);
 
@@ -108,7 +115,6 @@ async function executeGitHubAction(context, eventName, eventData) {
   } else {
     throw new ClientError(`invalid event type: ${eventName}`);
   }
-  return { mergeResult: RESULT_SKIPPED };
 }
 
 async function handlePullRequestUpdate(context, eventName, event) {
@@ -21026,14 +21032,8 @@ const process = __nccwpck_require__(7282);
 const fse = __nccwpck_require__(5630);
 const { ArgumentParser } = __nccwpck_require__(1515);
 const { Octokit } = __nccwpck_require__(5375);
-const actionsCore = __nccwpck_require__(2186);
 
-const {
-  ClientError,
-  logger,
-  createConfig,
-  RESULT_SKIPPED
-} = __nccwpck_require__(6979);
+const { ClientError, logger, createConfig } = __nccwpck_require__(6979);
 const { executeLocally, executeGitHubAction } = __nccwpck_require__(8947);
 
 const pkg = __nccwpck_require__(4147);
@@ -21089,9 +21089,8 @@ async function main() {
 
   const context = { token, octokit, config };
 
-  let results;
   if (args.url) {
-    results = await executeLocally(context, args.url);
+    await executeLocally(context, args.url);
   } else {
     const eventPath = env("GITHUB_EVENT_PATH");
     const eventName = env("GITHUB_EVENT_NAME");
@@ -21099,18 +21098,8 @@ async function main() {
     const eventDataStr = await fse.readFile(eventPath, "utf8");
     const eventData = JSON.parse(eventDataStr);
 
-    results = await executeGitHubAction(context, eventName, eventData);
-    if (Array.isArray(results)) {
-      logger.info(
-        "got more than one result, setting only first result for action step output"
-      );
-      results = results[0];
-    }
-    const { mergeResult, pullRequestNumber } = results || {};
-    actionsCore.setOutput("mergeResult", mergeResult || RESULT_SKIPPED);
-    actionsCore.setOutput("pullRequestNumber", pullRequestNumber || 0);
+    await executeGitHubAction(context, eventName, eventData);
   }
-  logger.info("Auto-merge action result(s):", results);
 }
 
 function checkOldConfig() {

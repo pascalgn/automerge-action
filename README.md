@@ -61,7 +61,8 @@ jobs:
   automerge:
     runs-on: ubuntu-latest
     steps:
-      - name: automerge
+      - id: automerge
+        name: automerge
         uses: "pascalgn/automerge-action@v0.14.3"
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
@@ -242,38 +243,32 @@ Automerge can be configured to run for these events:
 
 For more information on when these occur, see the Github documentation on [events that trigger workflows](https://docs.github.com/en/actions/reference/events-that-trigger-workflows) and [their payloads](https://docs.github.com/en/developers/webhooks-and-events/webhook-events-and-payloads).
 
-## Using Step Output
+## Outputs
 
-The action will provide two [outputs](https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idoutputs) to the Github action context:
+The action will provide two [outputs](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idoutputs):
 
-* `mergeResult` - The result from the action run, could be one of `skipped`, `not_ready`, `author_filtered`, `merge_failed`, `merged`
-* `pullRequestNumber` - If one or more pull requests were matched in the action this value will hold the Github number of one of them
+* `mergeResult` - The result from the action run, one of `skipped`, `not_ready`, `author_filtered`, `merge_failed`, `merged`
+* `pullRequestNumber` - The pull request number (or `0`, if no pull request was affected)
 
-Note that in order to access these outputs, your automerge step must define an `id`.
+Please note:
 
-These values could be used to run additional action steps in accordance to the automerge result.
+1. When there are multiple pull requests affected, only the first one will be available in the output
+2. To access these outputs, your workflow configuration must define an `id` for the automerge-action step
+3. Unless a personal access token is used, this action will not trigger other actions, see [Limitations](#limitations)
 
-This should be especially useful when using the built in `GITHUB_TOKEN`, see [Limitations](#Limitations).
-
-For example:
+Example usage:
 
 ```yaml
-name: automerge
-on:
-  ...
-jobs:
-  automerge:
-    runs-on: ubuntu-latest
     steps:
-      - name: automerge
-        id: automerge
-        uses: "pascalgn/automerge-action@v0.14.2"
+      - id: automerge
+        name: automerge
+        uses: "pascalgn/automerge-action@v0.14.3"
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
       - name: feedback
         if: steps.automerge.outputs.mergeResult == "merged"
         run: |
-          echo "Pull request ${{ steps.automerge.outputs.pullRequestNumber }} was auto merged!"
+          echo "Pull request ${{ steps.automerge.outputs.pullRequestNumber }} merged!"
 ```
 
 ## Limitations
