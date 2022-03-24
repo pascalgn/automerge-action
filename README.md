@@ -156,6 +156,9 @@ The following merge options are supported:
   be deleted. This is not the list of GitHub's protected branches, which are never
   deleted, but an additional list of branches to protect. The default value is `""`.
 
+- `MERGE_ERROR_FAIL`: Set this to `true` to have the action exit with error code `1`
+  when the pull request could not be merged successfully during a run.
+
 The following update options are supported:
 
 - `UPDATE_LABELS`: The labels that need to be present for a pull request to be

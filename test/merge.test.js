@@ -8,7 +8,8 @@ beforeEach(() => {
   mergeMethod = undefined;
   octokit = {
     pulls: {
-      merge: jest.fn(({ merge_method }) => (mergeMethod = merge_method))
+      merge: jest.fn(({ merge_method }) => (mergeMethod = merge_method)),
+      get: () => {}
     }
   };
 });
@@ -266,4 +267,34 @@ test("Base branch not listed then PR is skipped", async () => {
 
   // WHEN
   expect(await merge({ config, octokit }, pr, 0)).toEqual("skipped");
+});
+
+test("Unmergeable pull request fails action with non-zero exit code", async () => {
+  // GIVEN
+  const pr = pullRequest();
+  pr.mergeable_state = "blocked";
+  const config = createConfig({ MERGE_ERROR_FAIL: "true" });
+  octokit.pulls.get = async () => ({ data: pr });
+
+  // Reduce retry wait period to 1ms to prevent test timeout
+  config.mergeRetrySleep = 1;
+
+  // WHEN
+  const mockExit = jest
+    .spyOn(process, "exit")
+    .mockImplementationOnce(statusCode => {
+      throw new Error(
+        `process.exit was called with status code: ${statusCode}`
+      );
+    });
+
+  try {
+    await merge({ config, octokit }, pr, 0);
+  } catch (e) {
+    expect(e).toEqual(new Error("process.exit was called with status code: 1"));
+    expect(mockExit).toHaveBeenCalledWith(1);
+    return;
+  }
+
+  throw new Error("process.exit was not called!");
 });
