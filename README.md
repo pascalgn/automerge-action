@@ -63,7 +63,7 @@ jobs:
     steps:
       - id: automerge
         name: automerge
-        uses: "pascalgn/automerge-action@v0.14.4"
+        uses: "pascalgn/automerge-action@v0.15.0"
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 ```
@@ -262,7 +262,7 @@ Example usage:
     steps:
       - id: automerge
         name: automerge
-        uses: "pascalgn/automerge-action@v0.14.4"
+        uses: "pascalgn/automerge-action@v0.15.0"
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
       - name: feedback
