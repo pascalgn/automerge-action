@@ -45,7 +45,8 @@ async function executeLocally(context, url) {
     const { data: pull_request } = await octokit.pulls.get({
       owner: m[1],
       repo: m[2],
-      pull_number: m[4]
+      pull_number: m[4],
+      headers: { "If-None-Match": "" }
     });
 
     const event = {
@@ -147,7 +148,8 @@ async function handleArbitraryPullRequestUpdate(context, eventData) {
     const { data: pullRequest } = await octokit.pulls.get({
       owner: repoOwner,
       repo: repoName,
-      pull_number: pullRequestNumber
+      pull_number: pullRequestNumber,
+      headers: { "If-None-Match": "" }
     });
     logger.trace("Full PR:", pullRequest);
 
@@ -438,7 +440,8 @@ async function fetchPullRequest(context, repository, issue) {
   let { data: pullRequest } = await octokit.pulls.get({
     owner: repository.owner.login,
     repo: repository.name,
-    pull_number: number
+    pull_number: number,
+    headers: { "If-None-Match": "" }
   });
 
   logger.trace("Full PR:", pullRequest);
@@ -1272,7 +1275,8 @@ async function getPullRequest(octokit, pullRequest) {
   const { data: pr } = await octokit.pulls.get({
     owner: pullRequest.base.repo.owner.login,
     repo: pullRequest.base.repo.name,
-    pull_number: pullRequest.number
+    pull_number: pullRequest.number,
+    headers: { "If-None-Match": "" }
   });
 
   logger.trace("PR:", pr);
@@ -1551,7 +1555,8 @@ async function pullRequestState(
         const { data } = await octokit.pulls.get({
           owner: pullRequest.base.repo.owner.login,
           repo: pullRequest.base.repo.name,
-          pull_number: pullRequest.number
+          pull_number: pullRequest.number,
+          headers: { "If-None-Match": "" }
         });
         fullPullRequest = data;
       }
