@@ -273,7 +273,7 @@ test("Unmergeable pull request fails action with non-zero exit code", async () =
   // GIVEN
   const pr = pullRequest();
   pr.mergeable_state = "blocked";
-  const config = createConfig();
+  const config = createConfig({ MERGE_ERROR_FAIL: "true" });
   octokit.pulls.get = async () => ({ data: pr });
 
   // Reduce retry wait period to 1ms to prevent test timeout
@@ -287,10 +287,14 @@ test("Unmergeable pull request fails action with non-zero exit code", async () =
         `process.exit was called with status code: ${statusCode}`
       );
     });
+
   try {
     await merge({ config, octokit }, pr, 0);
   } catch (e) {
     expect(e).toEqual(new Error("process.exit was called with status code: 1"));
     expect(mockExit).toHaveBeenCalledWith(1);
+    return;
   }
+
+  throw new Error("process.exit was not called!");
 });

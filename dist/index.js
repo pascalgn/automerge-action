@@ -533,13 +533,11 @@ const logger = {
   info: (...str) => log("INFO ", str),
 
   error: (...str) => {
-    if (str.length === 1) {
-      if (str[0] instanceof Error) {
-        if (logger.level === "trace" || logger.level === "debug") {
-          log(null, [str[0].stack || str[0]]);
-        } else {
-          log("ERROR", [str[0].message || str[0]]);
-        }
+    if (str.length === 1 && str[0] instanceof Error) {
+      if (logger.level === "trace" || logger.level === "debug") {
+        log(null, [str[0].stack || str[0]]);
+      } else {
+        log("ERROR", [str[0].message || str[0]]);
       }
     } else {
       log("ERROR", str);
@@ -663,6 +661,7 @@ function createConfig(env = {}) {
   const mergeDeleteBranchFilter = parseArray(env.MERGE_DELETE_BRANCH_FILTER);
   const mergeMethodLabels = parseLabelMethods(env.MERGE_METHOD_LABELS);
   const mergeMethodLabelRequired = env.MERGE_METHOD_LABEL_REQUIRED === "true";
+  const mergeErrorFail = env.MERGE_ERROR_FAIL === "true";
 
   const updateLabels = parseMergeLabels(env.UPDATE_LABELS, "automerge");
   const updateMethod = env.UPDATE_METHOD || "merge";
@@ -688,6 +687,7 @@ function createConfig(env = {}) {
     mergeRequiredApprovals,
     mergeDeleteBranch,
     mergeDeleteBranchFilter,
+    mergeErrorFail,
     updateLabels,
     updateMethod,
     updateRetries,
@@ -751,11 +751,6 @@ async function retry(retries, retrySleep, doInitial, doRetry, doFailed) {
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-function fail(message) {
-  logger.error(message);
-  process.exit(1);
 }
 
 module.exports = {
@@ -1011,7 +1006,8 @@ async function merge(context, pullRequest, approvalCount) {
       mergeFilterAuthor,
       mergeRemoveLabels,
       mergeRetries,
-      mergeRetrySleep
+      mergeRetrySleep,
+      mergeErrorFail
     }
   } = context;
 
@@ -1054,6 +1050,7 @@ async function merge(context, pullRequest, approvalCount) {
     mergeMethod,
     mergeRetries,
     mergeRetrySleep,
+    mergeErrorFail,
     commitMessage
   );
   if (!merged) {
@@ -1234,7 +1231,7 @@ function skipPullRequest(context, pullRequest, approvalCount) {
 function waitUntilReady(pullRequest, context) {
   const {
     octokit,
-    config: { mergeRetries, mergeRetrySleep }
+    config: { mergeRetries, mergeRetrySleep, mergeErrorFail }
   } = context;
 
   return retry(
@@ -1245,7 +1242,7 @@ function waitUntilReady(pullRequest, context) {
       const pr = await getPullRequest(octokit, pullRequest);
       return checkReady(pr, context);
     },
-    () => fail(`PR not ready to be merged after ${mergeRetries} tries`)
+    () => failOrInfo(mergeRetries, mergeErrorFail)
   );
 }
 
@@ -1290,6 +1287,7 @@ function tryMerge(
   mergeMethod,
   mergeRetries,
   mergeRetrySleep,
+  mergeErrorFail,
   commitMessage
 ) {
   return retry(
@@ -1310,8 +1308,18 @@ function tryMerge(
         commitMessage
       );
     },
-    () => fail(`PR could not be merged after ${mergeRetries} tries`)
+    () => failOrInfo(mergeRetries, mergeErrorFail)
   );
+}
+
+function failOrInfo(mergeRetries, mergeErrorFail) {
+  const message = `PR not ready to be merged after ${mergeRetries} tries`;
+  if (mergeErrorFail) {
+    logger.error(message);
+    process.exit(1);
+  } else {
+    logger.info(message);
+  }
 }
 
 function getMergeMethod(defaultMergeMethod, mergeMethodLabels, pullRequest) {
