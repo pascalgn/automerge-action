@@ -7,7 +7,14 @@
 
 const process = __nccwpck_require__(7282);
 
-const { ClientError, logger } = __nccwpck_require__(6979);
+const { setOutput } = __nccwpck_require__(2186);
+
+const {
+  ClientError,
+  logger,
+  RESULT_NOT_READY,
+  RESULT_SKIPPED
+} = __nccwpck_require__(6979);
 const { update } = __nccwpck_require__(3056);
 const { merge } = __nccwpck_require__(452);
 const { branchName } = __nccwpck_require__(4024);
@@ -46,7 +53,7 @@ async function executeLocally(context, url) {
       pull_request
     };
 
-    await executeGitHubAction(context, "pull_request", event);
+    return executeGitHubAction(context, "pull_request", event);
   } else if (m && m[3] === "tree") {
     const event = {
       ref: `refs/heads/${m[4]}`,
@@ -58,41 +65,53 @@ async function executeLocally(context, url) {
       }
     };
 
-    await executeGitHubAction(context, "push", event);
+    return executeGitHubAction(context, "push", event);
   } else {
     throw new ClientError(`invalid URL: ${url}`);
   }
 }
 
-async function updateAndMerge(context, pullRequest) {
-  const approvalCount = await fetchApprovalReviewCount(context, pullRequest);
+async function executeGitHubAction(context, eventName, eventData) {
+  const result = await executeGitHubActionImpl(context, eventName, eventData);
+  logger.info("Action result:", result);
 
-  await update(context, pullRequest);
-  await merge(context, pullRequest, approvalCount);
+  let singleResult;
+  if (Array.isArray(result)) {
+    logger.info("More than one result, using  first result for action output");
+    singleResult = result[0];
+  } else if (result != null) {
+    singleResult = result;
+  } else {
+    throw new Error("invalid result!");
+  }
+
+  const { mergeResult, pullRequestNumber } = singleResult || {};
+  setOutput("mergeResult", mergeResult || RESULT_SKIPPED);
+  setOutput("pullRequestNumber", pullRequestNumber || 0);
 }
 
-async function executeGitHubAction(context, eventName, eventData) {
+async function executeGitHubActionImpl(context, eventName, eventData) {
   logger.info("Event name:", eventName);
   logger.trace("Event data:", eventData);
 
   if (context.config.pullRequest != null) {
-    await handleArbitraryPullRequestUpdate(context, eventData);
+    return await handleArbitraryPullRequestUpdate(context, eventData);
   } else if (["push"].includes(eventName)) {
     await handleBaseBranchUpdate(context, eventName, eventData);
   } else if (["status"].includes(eventName)) {
-    await handleStatusUpdate(context, eventName, eventData);
+    return await handleStatusUpdate(context, eventName, eventData);
   } else if (["pull_request", "pull_request_target"].includes(eventName)) {
-    await handlePullRequestUpdate(context, eventName, eventData);
+    return await handlePullRequestUpdate(context, eventName, eventData);
   } else if (["check_suite", "check_run", "workflow_run"].includes(eventName)) {
-    await handleCheckOrWorkflowUpdate(context, eventName, eventData);
+    return await handleCheckOrWorkflowUpdate(context, eventName, eventData);
   } else if (["pull_request_review"].includes(eventName)) {
-    await handlePullRequestReviewUpdate(context, eventName, eventData);
+    return await handlePullRequestReviewUpdate(context, eventName, eventData);
   } else if (["schedule", "repository_dispatch"].includes(eventName)) {
-    await handleScheduleTriggerOrRepositoryDispatch(context);
+    return await handleScheduleTriggerOrRepositoryDispatch(context);
   } else if (["issue_comment"].includes(eventName)) {
-    await handleIssueComment(context, eventName, eventData);
+    return await handleIssueComment(context, eventName, eventData);
   } else if (["workflow_dispatch"].includes(eventName)) {
-    await handleWorkflowDispatch(context, eventName, eventData);
+    return await handleWorkflowDispatch(context, eventName, eventData);
   } else {
     throw new ClientError(`invalid event type: ${eventName}`);
   }
@@ -102,7 +121,7 @@ async function handlePullRequestUpdate(context, eventName, event) {
   const { action } = event;
   if (!RELEVANT_ACTIONS.includes(action)) {
     logger.info("Action ignored:", eventName, action);
-    return;
+    return { mergeResult: RESULT_SKIPPED };
   }
 
   const pullRequest = await fetchPullRequest(
@@ -110,7 +129,8 @@ async function handlePullRequestUpdate(context, eventName, event) {
     event.pull_request.base.repo,
     event.pull_request
   );
-  await updateAndMerge(context, pullRequest);
+
+  return updateAndMerge(context, pullRequest);
 }
 
 async function handleArbitraryPullRequestUpdate(context, eventData) {
@@ -130,7 +150,8 @@ async function handleArbitraryPullRequestUpdate(context, eventData) {
       pull_number: pullRequestNumber
     });
     logger.trace("Full PR:", pullRequest);
-    await updateAndMerge(context, pullRequest);
+
+    return updateAndMerge(context, pullRequest);
   } catch (e) {
     logger.error(
       `Error fetching pull request: ${repoOwner}/${repoName}/${pullRequestNumber}`
@@ -144,7 +165,7 @@ async function handleCheckOrWorkflowUpdate(context, eventName, event) {
   const eventType = eventName === "workflow_run" ? "workflow" : "status check";
   if (action !== "completed") {
     logger.info(`A ${eventType} is not yet complete:`, eventName);
-    return;
+    return { mergeResult: RESULT_NOT_READY };
   }
 
   const payload = event[eventName];
@@ -153,7 +174,7 @@ async function handleCheckOrWorkflowUpdate(context, eventName, event) {
   }
   if (payload.conclusion !== "success") {
     logger.info(`A ${eventType} completed unsuccessfully:`, eventName);
-    return;
+    return { mergeResult: RESULT_NOT_READY };
   }
 
   logger.info(`${eventType} completed successfully`);
@@ -163,13 +184,14 @@ async function handleCheckOrWorkflowUpdate(context, eventName, event) {
     const { octokit } = context;
     const { data: pullRequest } = await octokit.request(eventPullRequest.url);
     logger.trace("PR:", pullRequest);
-    await updateAndMerge(context, pullRequest);
+
+    return updateAndMerge(context, pullRequest);
   } else {
     const branchName = payload.head_branch;
     if (branchName != null) {
-      await checkPullRequestsForBranches(context, event, branchName);
+      return await checkPullRequestsForBranches(context, event, branchName);
     } else {
-      await checkPullRequestsForHeadSha(
+      return await checkPullRequestsForHeadSha(
         context,
         event.repository,
         payload.head_sha
@@ -187,7 +209,7 @@ async function handlePullRequestReviewUpdate(context, eventName, event) {
         event.pull_request.base.repo,
         event.pull_request
       );
-      await updateAndMerge(context, pullRequest);
+      return updateAndMerge(context, pullRequest);
     } else {
       logger.info("Review state is not approved:", review.state);
       logger.info("Action ignored:", eventName, action);
@@ -195,23 +217,28 @@ async function handlePullRequestReviewUpdate(context, eventName, event) {
   } else {
     logger.info("Action ignored:", eventName, action);
   }
+  return { mergeResult: RESULT_SKIPPED };
 }
 
 async function handleStatusUpdate(context, eventName, event) {
   const { state, branches } = event;
   if (state !== "success") {
     logger.info("Event state ignored:", eventName, state);
-    return;
+    return [];
   }
 
   if (!branches || branches.length === 0) {
     logger.info("No branches have been referenced:", eventName);
-    return;
+    return [];
   }
 
+  let results = [];
   for (const branch of branches) {
-    await checkPullRequestsForBranches(context, event, branch.name);
+    results = results.concat(
+      await checkPullRequestsForBranches(context, event, branch.name)
+    );
   }
+  return results;
 }
 
 async function checkPullRequestsForBranches(context, event, branchName) {
@@ -230,9 +257,11 @@ async function checkPullRequestsForBranches(context, event, branchName) {
   logger.trace("PR list:", pullRequests);
 
   let updated = 0;
+  let results = [];
   for (const pullRequest of pullRequests) {
     try {
-      await updateAndMerge(context, pullRequest);
+      const result = await updateAndMerge(context, pullRequest);
+      results.push(result);
       ++updated;
     } catch (e) {
       logger.error(e);
@@ -242,6 +271,7 @@ async function checkPullRequestsForBranches(context, event, branchName) {
   if (updated === 0) {
     logger.info("No PRs have been updated/merged");
   }
+  return results;
 }
 
 async function checkPullRequestsForHeadSha(context, repo, head_sha) {
@@ -258,13 +288,15 @@ async function checkPullRequestsForHeadSha(context, repo, head_sha) {
 
   let updated = 0;
   let foundPR = false;
+  let results = [];
   for (const pullRequest of pullRequests) {
     if (pullRequest.head.sha !== head_sha) {
       continue;
     }
     foundPR = true;
     try {
-      await updateAndMerge(context, pullRequest);
+      const result = await updateAndMerge(context, pullRequest);
+      results.push(result);
       ++updated;
     } catch (e) {
       logger.error(e);
@@ -280,6 +312,7 @@ async function checkPullRequestsForHeadSha(context, repo, head_sha) {
         " or corresponding PR from a forked repository"
     );
   }
+  return results;
 }
 
 async function handleBaseBranchUpdate(context, eventName, event) {
@@ -315,7 +348,6 @@ async function handleBaseBranchUpdate(context, eventName, event) {
   }
 
   let updated = 0;
-
   for (const pullRequest of pullRequests) {
     try {
       await update(context, pullRequest);
@@ -337,10 +369,10 @@ async function handleWorkflowDispatch(context, eventName, event) {
   const branch = branchName(ref);
   if (!branch) {
     logger.info("Dispatch does not reference a branch:", ref);
-    return;
+    return { mergeResult: RESULT_SKIPPED };
   }
 
-  await checkPullRequestsForBranches(context, event, branch);
+  return await checkPullRequestsForBranches(context, event, branch);
 }
 
 async function handleScheduleTriggerOrRepositoryDispatch(context) {
@@ -366,9 +398,11 @@ async function handleScheduleTriggerOrRepositoryDispatch(context) {
   logger.trace("PR list:", pullRequests);
 
   let updated = 0;
+  let results = [];
   for (const pullRequest of pullRequests) {
     try {
-      await updateAndMerge(context, pullRequest);
+      const result = await updateAndMerge(context, pullRequest);
+      results.push(result);
       ++updated;
     } catch (e) {
       logger.error(e);
@@ -377,8 +411,8 @@ async function handleScheduleTriggerOrRepositoryDispatch(context) {
 
   if (updated === 0) {
     logger.info("No PRs have been updated/merged");
-    return;
   }
+  return results;
 }
 
 async function handleIssueComment(context, eventName, event) {
@@ -388,11 +422,12 @@ async function handleIssueComment(context, eventName, event) {
       logger.info("Comment not on a PR, skipping");
     } else {
       const pullRequest = await fetchPullRequest(context, repository, issue);
-      await updateAndMerge(context, pullRequest);
+      return updateAndMerge(context, pullRequest);
     }
   } else {
     logger.info("Action ignored:", eventName, action);
   }
+  return { mergeResult: RESULT_SKIPPED };
 }
 
 async function fetchPullRequest(context, repository, issue) {
@@ -408,6 +443,13 @@ async function fetchPullRequest(context, repository, issue) {
 
   logger.trace("Full PR:", pullRequest);
   return pullRequest;
+}
+
+async function updateAndMerge(context, pullRequest) {
+  const approvalCount = await fetchApprovalReviewCount(context, pullRequest);
+  await update(context, pullRequest);
+  const mergeResult = await merge(context, pullRequest, approvalCount);
+  return { mergeResult, pullRequestNumber: pullRequest.number };
 }
 
 async function fetchApprovalReviewCount(context, pullRequest) {
@@ -450,6 +492,12 @@ const util = __nccwpck_require__(3837);
 const process = __nccwpck_require__(7282);
 const fse = __nccwpck_require__(5630);
 const tmp = __nccwpck_require__(8517);
+
+const RESULT_SKIPPED = "skipped";
+const RESULT_NOT_READY = "not_ready";
+const RESULT_AUTHOR_FILTERED = "author_filtered";
+const RESULT_MERGE_FAILED = "merge_failed";
+const RESULT_MERGED = "merged";
 
 class ClientError extends Error {}
 
@@ -533,6 +581,13 @@ function createConfig(env = {}) {
     return str ? str.split(",") : [];
   }
 
+  function parseBranches(str, defaultValue) {
+    return (str == null ? defaultValue : str)
+      .split(",")
+      .map(s => s.trim())
+      .filter(s => s);
+  }
+
   function parsePositiveInt(name, defaultValue) {
     const val = env[name];
     if (val == null || val === "") {
@@ -614,6 +669,8 @@ function createConfig(env = {}) {
   const updateRetries = parsePositiveInt("UPDATE_RETRIES", 1);
   const updateRetrySleep = parsePositiveInt("UPDATE_RETRY_SLEEP", 5000);
 
+  const baseBranches = parseBranches(env.BASE_BRANCHES, "");
+
   const pullRequest = parsePullRequest(env.PULL_REQUEST);
 
   return {
@@ -635,6 +692,7 @@ function createConfig(env = {}) {
     updateMethod,
     updateRetries,
     updateRetrySleep,
+    baseBranches,
     pullRequest
   };
 }
@@ -647,6 +705,7 @@ function tmpdir(callback) {
       await fse.remove(path);
     }
   }
+
   return new Promise((resolve, reject) => {
     tmp.dir((err, path) => {
       if (err) {
@@ -702,7 +761,12 @@ module.exports = {
   tmpdir,
   inspect,
   retry,
-  sleep
+  sleep,
+  RESULT_SKIPPED,
+  RESULT_NOT_READY,
+  RESULT_AUTHOR_FILTERED,
+  RESULT_MERGE_FAILED,
+  RESULT_MERGED
 };
 
 
@@ -906,8 +970,15 @@ module.exports = {
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 const resolvePath = __nccwpck_require__(2983);
-
-const { logger, retry } = __nccwpck_require__(6979);
+const {
+  RESULT_MERGED,
+  RESULT_MERGE_FAILED,
+  RESULT_AUTHOR_FILTERED,
+  RESULT_NOT_READY,
+  RESULT_SKIPPED,
+  logger,
+  retry
+} = __nccwpck_require__(6979);
 
 const MAYBE_READY = ["clean", "has_hooks", "unknown", "unstable"];
 const NOT_READY = ["dirty", "draft"];
@@ -916,7 +987,7 @@ const PR_PROPERTY = new RegExp("{pullRequest.([^}]+)}", "g");
 
 async function merge(context, pullRequest, approvalCount) {
   if (skipPullRequest(context, pullRequest, approvalCount)) {
-    return false;
+    return RESULT_SKIPPED;
   }
 
   logger.info(`Merging PR #${pullRequest.number} ${pullRequest.title}`);
@@ -941,7 +1012,7 @@ async function merge(context, pullRequest, approvalCount) {
 
   const ready = await waitUntilReady(pullRequest, context);
   if (!ready) {
-    return false;
+    return RESULT_NOT_READY;
   }
 
   if (mergeCommitMessageRegex) {
@@ -962,7 +1033,7 @@ async function merge(context, pullRequest, approvalCount) {
       `PR author '${pullRequest.user.login}' does not match filter:`,
       mergeFilterAuthor
     );
-    return false;
+    return RESULT_AUTHOR_FILTERED;
   }
 
   const commitMessage = getCommitMessage(mergeCommitMessage, pullRequest);
@@ -981,7 +1052,7 @@ async function merge(context, pullRequest, approvalCount) {
     commitMessage
   );
   if (!merged) {
-    return false;
+    return RESULT_MERGE_FAILED;
   }
 
   logger.info("PR successfully merged!");
@@ -1004,7 +1075,7 @@ async function merge(context, pullRequest, approvalCount) {
     }
   }
 
-  return true;
+  return RESULT_MERGED;
 }
 
 async function removeLabels(octokit, pullRequest, mergeRemoveLabels) {
@@ -1083,7 +1154,8 @@ function skipPullRequest(context, pullRequest, approvalCount) {
       mergeLabels,
       mergeRequiredApprovals,
       mergeMethodLabelRequired,
-      mergeMethodLabels
+      mergeMethodLabels,
+      baseBranches
     }
   } = context;
 
@@ -1136,6 +1208,18 @@ function skipPullRequest(context, pullRequest, approvalCount) {
     .filter(x => x).length;
   if (mergeMethodLabelRequired && numberMethodLabelsFound === 0) {
     logger.info("Skipping PR merge, required merge method label missing");
+    skip = true;
+  }
+
+  if (
+    baseBranches &&
+    baseBranches.length &&
+    !baseBranches.some(branch => branch === pullRequest.base.ref)
+  ) {
+    logger.info(
+      "Skipping PR merge, base branch is not in the provided list:",
+      baseBranches
+    );
     skip = true;
   }
 
@@ -1516,6 +1600,482 @@ function branchName(ref) {
 
 module.exports = { branchName };
 
+
+/***/ }),
+
+/***/ 7351:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.issue = exports.issueCommand = void 0;
+const os = __importStar(__nccwpck_require__(2037));
+const utils_1 = __nccwpck_require__(5278);
+/**
+ * Commands
+ *
+ * Command Format:
+ *   ::name key=value,key=value::message
+ *
+ * Examples:
+ *   ::warning::This is the message
+ *   ::set-env name=MY_VAR::some value
+ */
+function issueCommand(command, properties, message) {
+    const cmd = new Command(command, properties, message);
+    process.stdout.write(cmd.toString() + os.EOL);
+}
+exports.issueCommand = issueCommand;
+function issue(name, message = '') {
+    issueCommand(name, {}, message);
+}
+exports.issue = issue;
+const CMD_STRING = '::';
+class Command {
+    constructor(command, properties, message) {
+        if (!command) {
+            command = 'missing.command';
+        }
+        this.command = command;
+        this.properties = properties;
+        this.message = message;
+    }
+    toString() {
+        let cmdStr = CMD_STRING + this.command;
+        if (this.properties && Object.keys(this.properties).length > 0) {
+            cmdStr += ' ';
+            let first = true;
+            for (const key in this.properties) {
+                if (this.properties.hasOwnProperty(key)) {
+                    const val = this.properties[key];
+                    if (val) {
+                        if (first) {
+                            first = false;
+                        }
+                        else {
+                            cmdStr += ',';
+                        }
+                        cmdStr += `${key}=${escapeProperty(val)}`;
+                    }
+                }
+            }
+        }
+        cmdStr += `${CMD_STRING}${escapeData(this.message)}`;
+        return cmdStr;
+    }
+}
+function escapeData(s) {
+    return utils_1.toCommandValue(s)
+        .replace(/%/g, '%25')
+        .replace(/\r/g, '%0D')
+        .replace(/\n/g, '%0A');
+}
+function escapeProperty(s) {
+    return utils_1.toCommandValue(s)
+        .replace(/%/g, '%25')
+        .replace(/\r/g, '%0D')
+        .replace(/\n/g, '%0A')
+        .replace(/:/g, '%3A')
+        .replace(/,/g, '%2C');
+}
+//# sourceMappingURL=command.js.map
+
+/***/ }),
+
+/***/ 2186:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.getState = exports.saveState = exports.group = exports.endGroup = exports.startGroup = exports.info = exports.warning = exports.error = exports.debug = exports.isDebug = exports.setFailed = exports.setCommandEcho = exports.setOutput = exports.getBooleanInput = exports.getMultilineInput = exports.getInput = exports.addPath = exports.setSecret = exports.exportVariable = exports.ExitCode = void 0;
+const command_1 = __nccwpck_require__(7351);
+const file_command_1 = __nccwpck_require__(717);
+const utils_1 = __nccwpck_require__(5278);
+const os = __importStar(__nccwpck_require__(2037));
+const path = __importStar(__nccwpck_require__(1017));
+/**
+ * The code to exit an action
+ */
+var ExitCode;
+(function (ExitCode) {
+    /**
+     * A code indicating that the action was successful
+     */
+    ExitCode[ExitCode["Success"] = 0] = "Success";
+    /**
+     * A code indicating that the action was a failure
+     */
+    ExitCode[ExitCode["Failure"] = 1] = "Failure";
+})(ExitCode = exports.ExitCode || (exports.ExitCode = {}));
+//-----------------------------------------------------------------------
+// Variables
+//-----------------------------------------------------------------------
+/**
+ * Sets env variable for this action and future actions in the job
+ * @param name the name of the variable to set
+ * @param val the value of the variable. Non-string values will be converted to a string via JSON.stringify
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function exportVariable(name, val) {
+    const convertedVal = utils_1.toCommandValue(val);
+    process.env[name] = convertedVal;
+    const filePath = process.env['GITHUB_ENV'] || '';
+    if (filePath) {
+        const delimiter = '_GitHubActionsFileCommandDelimeter_';
+        const commandValue = `${name}<<${delimiter}${os.EOL}${convertedVal}${os.EOL}${delimiter}`;
+        file_command_1.issueCommand('ENV', commandValue);
+    }
+    else {
+        command_1.issueCommand('set-env', { name }, convertedVal);
+    }
+}
+exports.exportVariable = exportVariable;
+/**
+ * Registers a secret which will get masked from logs
+ * @param secret value of the secret
+ */
+function setSecret(secret) {
+    command_1.issueCommand('add-mask', {}, secret);
+}
+exports.setSecret = setSecret;
+/**
+ * Prepends inputPath to the PATH (for this action and future actions)
+ * @param inputPath
+ */
+function addPath(inputPath) {
+    const filePath = process.env['GITHUB_PATH'] || '';
+    if (filePath) {
+        file_command_1.issueCommand('PATH', inputPath);
+    }
+    else {
+        command_1.issueCommand('add-path', {}, inputPath);
+    }
+    process.env['PATH'] = `${inputPath}${path.delimiter}${process.env['PATH']}`;
+}
+exports.addPath = addPath;
+/**
+ * Gets the value of an input.
+ * Unless trimWhitespace is set to false in InputOptions, the value is also trimmed.
+ * Returns an empty string if the value is not defined.
+ *
+ * @param     name     name of the input to get
+ * @param     options  optional. See InputOptions.
+ * @returns   string
+ */
+function getInput(name, options) {
+    const val = process.env[`INPUT_${name.replace(/ /g, '_').toUpperCase()}`] || '';
+    if (options && options.required && !val) {
+        throw new Error(`Input required and not supplied: ${name}`);
+    }
+    if (options && options.trimWhitespace === false) {
+        return val;
+    }
+    return val.trim();
+}
+exports.getInput = getInput;
+/**
+ * Gets the values of an multiline input.  Each value is also trimmed.
+ *
+ * @param     name     name of the input to get
+ * @param     options  optional. See InputOptions.
+ * @returns   string[]
+ *
+ */
+function getMultilineInput(name, options) {
+    const inputs = getInput(name, options)
+        .split('\n')
+        .filter(x => x !== '');
+    return inputs;
+}
+exports.getMultilineInput = getMultilineInput;
+/**
+ * Gets the input value of the boolean type in the YAML 1.2 "core schema" specification.
+ * Support boolean input list: `true | True | TRUE | false | False | FALSE` .
+ * The return value is also in boolean type.
+ * ref: https://yaml.org/spec/1.2/spec.html#id2804923
+ *
+ * @param     name     name of the input to get
+ * @param     options  optional. See InputOptions.
+ * @returns   boolean
+ */
+function getBooleanInput(name, options) {
+    const trueValue = ['true', 'True', 'TRUE'];
+    const falseValue = ['false', 'False', 'FALSE'];
+    const val = getInput(name, options);
+    if (trueValue.includes(val))
+        return true;
+    if (falseValue.includes(val))
+        return false;
+    throw new TypeError(`Input does not meet YAML 1.2 "Core Schema" specification: ${name}\n` +
+        `Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
+}
+exports.getBooleanInput = getBooleanInput;
+/**
+ * Sets the value of an output.
+ *
+ * @param     name     name of the output to set
+ * @param     value    value to store. Non-string values will be converted to a string via JSON.stringify
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function setOutput(name, value) {
+    process.stdout.write(os.EOL);
+    command_1.issueCommand('set-output', { name }, value);
+}
+exports.setOutput = setOutput;
+/**
+ * Enables or disables the echoing of commands into stdout for the rest of the step.
+ * Echoing is disabled by default if ACTIONS_STEP_DEBUG is not set.
+ *
+ */
+function setCommandEcho(enabled) {
+    command_1.issue('echo', enabled ? 'on' : 'off');
+}
+exports.setCommandEcho = setCommandEcho;
+//-----------------------------------------------------------------------
+// Results
+//-----------------------------------------------------------------------
+/**
+ * Sets the action status to failed.
+ * When the action exits it will be with an exit code of 1
+ * @param message add error issue message
+ */
+function setFailed(message) {
+    process.exitCode = ExitCode.Failure;
+    error(message);
+}
+exports.setFailed = setFailed;
+//-----------------------------------------------------------------------
+// Logging Commands
+//-----------------------------------------------------------------------
+/**
+ * Gets whether Actions Step Debug is on or not
+ */
+function isDebug() {
+    return process.env['RUNNER_DEBUG'] === '1';
+}
+exports.isDebug = isDebug;
+/**
+ * Writes debug message to user log
+ * @param message debug message
+ */
+function debug(message) {
+    command_1.issueCommand('debug', {}, message);
+}
+exports.debug = debug;
+/**
+ * Adds an error issue
+ * @param message error issue message. Errors will be converted to string via toString()
+ */
+function error(message) {
+    command_1.issue('error', message instanceof Error ? message.toString() : message);
+}
+exports.error = error;
+/**
+ * Adds an warning issue
+ * @param message warning issue message. Errors will be converted to string via toString()
+ */
+function warning(message) {
+    command_1.issue('warning', message instanceof Error ? message.toString() : message);
+}
+exports.warning = warning;
+/**
+ * Writes info to log with console.log.
+ * @param message info message
+ */
+function info(message) {
+    process.stdout.write(message + os.EOL);
+}
+exports.info = info;
+/**
+ * Begin an output group.
+ *
+ * Output until the next `groupEnd` will be foldable in this group
+ *
+ * @param name The name of the output group
+ */
+function startGroup(name) {
+    command_1.issue('group', name);
+}
+exports.startGroup = startGroup;
+/**
+ * End an output group.
+ */
+function endGroup() {
+    command_1.issue('endgroup');
+}
+exports.endGroup = endGroup;
+/**
+ * Wrap an asynchronous function call in a group.
+ *
+ * Returns the same type as the function itself.
+ *
+ * @param name The name of the group
+ * @param fn The function to wrap in the group
+ */
+function group(name, fn) {
+    return __awaiter(this, void 0, void 0, function* () {
+        startGroup(name);
+        let result;
+        try {
+            result = yield fn();
+        }
+        finally {
+            endGroup();
+        }
+        return result;
+    });
+}
+exports.group = group;
+//-----------------------------------------------------------------------
+// Wrapper action state
+//-----------------------------------------------------------------------
+/**
+ * Saves state for current action, the state can only be retrieved by this action's post job execution.
+ *
+ * @param     name     name of the state to store
+ * @param     value    value to store. Non-string values will be converted to a string via JSON.stringify
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function saveState(name, value) {
+    command_1.issueCommand('save-state', { name }, value);
+}
+exports.saveState = saveState;
+/**
+ * Gets the value of an state set by this action's main execution.
+ *
+ * @param     name     name of the state to get
+ * @returns   string
+ */
+function getState(name) {
+    return process.env[`STATE_${name}`] || '';
+}
+exports.getState = getState;
+//# sourceMappingURL=core.js.map
+
+/***/ }),
+
+/***/ 717:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+// For internal use, subject to change.
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.issueCommand = void 0;
+// We use any as a valid input type
+/* eslint-disable @typescript-eslint/no-explicit-any */
+const fs = __importStar(__nccwpck_require__(7147));
+const os = __importStar(__nccwpck_require__(2037));
+const utils_1 = __nccwpck_require__(5278);
+function issueCommand(command, message) {
+    const filePath = process.env[`GITHUB_${command}`];
+    if (!filePath) {
+        throw new Error(`Unable to find environment variable for file command ${command}`);
+    }
+    if (!fs.existsSync(filePath)) {
+        throw new Error(`Missing file at path: ${filePath}`);
+    }
+    fs.appendFileSync(filePath, `${utils_1.toCommandValue(message)}${os.EOL}`, {
+        encoding: 'utf8'
+    });
+}
+exports.issueCommand = issueCommand;
+//# sourceMappingURL=file-command.js.map
+
+/***/ }),
+
+/***/ 5278:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+// We use any as a valid input type
+/* eslint-disable @typescript-eslint/no-explicit-any */
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.toCommandValue = void 0;
+/**
+ * Sanitizes an input into a string so it can be passed into issueCommand safely
+ * @param input input to sanitize into a string
+ */
+function toCommandValue(input) {
+    if (input === null || input === undefined) {
+        return '';
+    }
+    else if (typeof input === 'string' || input instanceof String) {
+        return input;
+    }
+    return JSON.stringify(input);
+}
+exports.toCommandValue = toCommandValue;
+//# sourceMappingURL=utils.js.map
 
 /***/ }),
 
@@ -20421,7 +20981,7 @@ module.exports = JSON.parse('[[[0,44],"disallowed_STD3_valid"],[[45,46],"valid"]
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"automerge-action","version":"0.13.0","description":"GitHub action to automatically merge pull requests","main":"lib/api.js","author":"Pascal","license":"MIT","private":true,"bin":{"automerge-action":"./bin/automerge.js"},"scripts":{"test":"jest","it":"node it/it.js","lint":"prettier -l lib/** test/** && eslint .","compile":"ncc build bin/automerge.js --license LICENSE -o dist","prepublish":"yarn lint && yarn test && yarn compile"},"dependencies":{"@octokit/rest":"^18.12.0","argparse":"^2.0.1","fs-extra":"^10.0.1","object-resolve-path":"^1.1.1","tmp":"^0.2.1"},"devDependencies":{"@vercel/ncc":"^0.33.3","dotenv":"^16.0.0","eslint":"^8.11.0","eslint-plugin-jest":"^26.1.3","jest":"^27.5.1","prettier":"^2.6.0"},"prettier":{"trailingComma":"none","arrowParens":"avoid"}}');
+module.exports = JSON.parse('{"name":"automerge-action","version":"0.14.4","description":"GitHub action to automatically merge pull requests","main":"lib/api.js","author":"Pascal","license":"MIT","private":true,"bin":{"automerge-action":"./bin/automerge.js"},"scripts":{"test":"jest","it":"node it/it.js","lint":"prettier -l lib/** test/** && eslint .","compile":"ncc build bin/automerge.js --license LICENSE -o dist","prepublish":"yarn lint && yarn test && yarn compile"},"dependencies":{"@actions/core":"^1.4.0","@octokit/rest":"^18.12.0","argparse":"^2.0.1","fs-extra":"^10.0.1","object-resolve-path":"^1.1.1","tmp":"^0.2.1"},"devDependencies":{"@vercel/ncc":"^0.33.3","dotenv":"^16.0.0","eslint":"^8.11.0","eslint-plugin-jest":"^26.1.3","jest":"^27.5.1","prettier":"^2.6.0"},"prettier":{"trailingComma":"none","arrowParens":"avoid"}}');
 
 /***/ })
 
@@ -20447,7 +21007,7 @@ module.exports = JSON.parse('{"name":"automerge-action","version":"0.13.0","desc
 /******/ 		// Execute the module function
 /******/ 		var threw = true;
 /******/ 		try {
-/******/ 			__webpack_modules__[moduleId](module, module.exports, __nccwpck_require__);
+/******/ 			__webpack_modules__[moduleId].call(module.exports, module, module.exports, __nccwpck_require__);
 /******/ 			threw = false;
 /******/ 		} finally {
 /******/ 			if(threw) delete __webpack_module_cache__[moduleId];
