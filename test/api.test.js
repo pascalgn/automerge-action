@@ -48,8 +48,9 @@ test("only merge PRs with required approvals", async () => {
     pulls: {
       list: jest.fn(() => ({ data: [pr] })),
       merge: jest.fn(() => (merged = true)),
-      listReviews: jest.fn(() => ({ data: [] }))
-    }
+      listReviews: Symbol("listReviews")
+    },
+    paginate: jest.fn(() => [])
   };
 
   const event = {
@@ -63,24 +64,20 @@ test("only merge PRs with required approvals", async () => {
   expect(merged).toEqual(false); // if there's no approval, it should fail
 
   merged = false;
-  octokit.pulls.listReviews.mockReturnValueOnce({
-    data: [
-      { state: "APPROVED", user: { login: "approval_user" } },
-      { state: "APPROVED", user: { login: "approval_user2" } }
-    ]
-  });
+  octokit.paginate.mockReturnValueOnce([
+    { state: "APPROVED", user: { login: "approval_user" } },
+    { state: "APPROVED", user: { login: "approval_user2" } }
+  ]);
 
   // WHEN
   await api.executeGitHubAction({ config, octokit }, "check_suite", event);
   expect(merged).toEqual(true); // if there are two approvals, it should succeed
 
   merged = false;
-  octokit.pulls.listReviews.mockReturnValueOnce({
-    data: [
-      { state: "APPROVED", user: { login: "approval_user" } },
-      { state: "APPROVED", user: { login: "approval_user" } }
-    ]
-  });
+  octokit.paginate.mockReturnValueOnce([
+    { state: "APPROVED", user: { login: "approval_user" } },
+    { state: "APPROVED", user: { login: "approval_user" } }
+  ]);
 
   // WHEN a user has given
   await api.executeGitHubAction({ config, octokit }, "check_suite", event);
