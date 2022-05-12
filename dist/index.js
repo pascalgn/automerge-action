@@ -468,7 +468,7 @@ async function fetchApprovalReviewCount(context, pullRequest) {
   }
 
   logger.debug("Getting reviews for", number, "...");
-  let { data: reviews } = await octokit.pulls.listReviews({
+  const reviews = await octokit.paginate(octokit.pulls.listReviews, {
     owner: pullRequest.base.repo.owner.login,
     repo: pullRequest.base.repo.name,
     pull_number: number
@@ -22095,7 +22095,7 @@ module.exports = JSON.parse('[[[0,44],"disallowed_STD3_valid"],[[45,46],"valid"]
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"automerge-action","version":"0.15.1","description":"GitHub action to automatically merge pull requests","main":"lib/api.js","author":"Pascal","license":"MIT","private":true,"bin":{"automerge-action":"./bin/automerge.js"},"scripts":{"test":"jest","it":"node it/it.js","lint":"prettier -l lib/** test/** && eslint .","compile":"ncc build bin/automerge.js --license LICENSE -o dist","prepublish":"yarn lint && yarn test && yarn compile"},"dependencies":{"@actions/core":"^1.6.0","@octokit/rest":"^18.12.0","argparse":"^2.0.1","fs-extra":"^10.0.1","object-resolve-path":"^1.1.1","tmp":"^0.2.1"},"devDependencies":{"@vercel/ncc":"^0.33.3","dotenv":"^16.0.0","eslint":"^8.11.0","eslint-plugin-jest":"^26.1.3","jest":"^27.5.1","prettier":"^2.6.0"},"prettier":{"trailingComma":"none","arrowParens":"avoid"}}');
+module.exports = JSON.parse('{"name":"automerge-action","version":"0.15.2","description":"GitHub action to automatically merge pull requests","main":"lib/api.js","author":"Pascal","license":"MIT","private":true,"bin":{"automerge-action":"./bin/automerge.js"},"scripts":{"test":"jest","it":"node it/it.js","lint":"prettier -l lib/** test/** && eslint .","compile":"ncc build bin/automerge.js --license LICENSE -o dist","prepublish":"yarn lint && yarn test && yarn compile"},"dependencies":{"@actions/core":"^1.6.0","@octokit/rest":"^18.12.0","argparse":"^2.0.1","fs-extra":"^10.0.1","object-resolve-path":"^1.1.1","tmp":"^0.2.1"},"devDependencies":{"@vercel/ncc":"^0.33.3","dotenv":"^16.0.0","eslint":"^8.11.0","eslint-plugin-jest":"^26.1.3","jest":"^27.5.1","prettier":"^2.6.0"},"prettier":{"trailingComma":"none","arrowParens":"avoid"}}');
 
 /***/ })
 
