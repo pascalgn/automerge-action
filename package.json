@@ -1,6 +1,6 @@
 {
   "name": "automerge-action",
-  "version": "0.15.3",
+  "version": "0.15.4",
   "description": "GitHub action to automatically merge pull requests",
   "main": "lib/api.js",
   "author": "Pascal",
