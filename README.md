@@ -110,8 +110,8 @@ The following merge options are supported:
   For example, `automerge=merge,autosquash=squash`. If no such label is present,
   the method set by `MERGE_METHOD` will be used. The default value is `""`.
 
-- `MERGE_METHOD_LABEL_REQUIRED`: Set to `true` to require one of the
-  `MERGE_METHOD_LABELS` to be set. The default value is `false`.
+- `MERGE_METHOD_LABEL_REQUIRED`: Set to `"true"` to require one of the
+  `MERGE_METHOD_LABELS` to be set. The default value is `"false"`.
 
 - `MERGE_COMMIT_MESSAGE`: The commit message to use when merging the pull
   request into the base branch. Possible values are `automatic` (use GitHub's
@@ -135,8 +135,8 @@ The following merge options are supported:
 - `MERGE_FORKS`: Whether merging from external repositories is enabled
   or not. By default, pull requests with branches from forked repositories will
   be merged the same way as pull requests with branches from the main
-  repository. Set this option to `false` to disable merging of pull requests
-  from forked repositories. The default value is `true`.
+  repository. Set this option to `"false"` to disable merging of pull requests
+  from forked repositories. The default value is `"true"`.
 
 - `MERGE_RETRIES` and `MERGE_RETRY_SLEEP`: Sometimes, the pull request check
   runs haven't finished yet, so the action will retry the merge after some time.
@@ -149,14 +149,14 @@ The following merge options are supported:
 - `MERGE_REQUIRED_APPROVALS`: Count of required approvals. The default is `0`.
 
 - `MERGE_DELETE_BRANCH`: Automatic deletion of branches does not work for all
-  repositories. Set this option to `true` to automatically delete branches
-  after they have been merged. The default value is `false`.
+  repositories. Set this option to `"true"` to automatically delete branches
+  after they have been merged. The default value is `"false"`.
 
 - `MERGE_DELETE_BRANCH_FILTER`: A comma-separated list of branches that will not
   be deleted. This is not the list of GitHub's protected branches, which are never
   deleted, but an additional list of branches to protect. The default value is `""`.
 
-- `MERGE_ERROR_FAIL`: Set this to `true` to have the action exit with error code `1`
+- `MERGE_ERROR_FAIL`: Set this to `"true"` to have the action exit with error code `1`
   when the pull request could not be merged successfully during a run.
 
 - `MERGE_READY_STATE`: The state(s) of a pull request for which to attempt a
