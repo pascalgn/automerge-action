@@ -159,6 +159,11 @@ The following merge options are supported:
 - `MERGE_ERROR_FAIL`: Set this to `true` to have the action exit with error code `1`
   when the pull request could not be merged successfully during a run.
 
+- `MERGE_READY_STATE`: The state(s) of a pull request for which to attempt a
+- merge. The default value is `"clean", "has_hooks", "unknown", "unstable"`.
+
+  This option can be a comma-separated list of states that will be considered mergeable.
+
 The following update options are supported:
 
 - `UPDATE_LABELS`: The labels that need to be present for a pull request to be
@@ -231,18 +236,18 @@ You can configure the environment variables in the workflow file like this:
 
 Automerge can be configured to run for these events:
 
-* `check_run`
-* `check_suite`
-* `issue_comment`
-* `pull_request_review`
-* `pull_request_target`
-* `pull_request`
-* `push`
-* `repository_dispatch`
-* `schedule`
-* `status`
-* `workflow_dispatch`
-* `workflow_run`
+- `check_run`
+- `check_suite`
+- `issue_comment`
+- `pull_request_review`
+- `pull_request_target`
+- `pull_request`
+- `push`
+- `repository_dispatch`
+- `schedule`
+- `status`
+- `workflow_dispatch`
+- `workflow_run`
 
 For more information on when these occur, see the Github documentation on [events that trigger workflows](https://docs.github.com/en/actions/reference/events-that-trigger-workflows) and [their payloads](https://docs.github.com/en/developers/webhooks-and-events/webhook-events-and-payloads).
 
@@ -250,8 +255,8 @@ For more information on when these occur, see the Github documentation on [event
 
 The action will provide two [outputs](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idoutputs):
 
-* `mergeResult` - The result from the action run, one of `skipped`, `not_ready`, `author_filtered`, `merge_failed`, `merged`
-* `pullRequestNumber` - The pull request number (or `0`, if no pull request was affected)
+- `mergeResult` - The result from the action run, one of `skipped`, `not_ready`, `author_filtered`, `merge_failed`, `merged`
+- `pullRequestNumber` - The pull request number (or `0`, if no pull request was affected)
 
 Please note:
 

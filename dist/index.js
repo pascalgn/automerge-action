@@ -578,8 +578,8 @@ function createConfig(env = {}) {
     });
   }
 
-  function parseArray(str) {
-    return str ? str.split(",") : [];
+  function parseArray(str, defaultArray = []) {
+    return str ? str.split(",") : defaultArray;
   }
 
   function parseBranches(str, defaultValue) {
@@ -665,6 +665,12 @@ function createConfig(env = {}) {
   const mergeMethodLabels = parseLabelMethods(env.MERGE_METHOD_LABELS);
   const mergeMethodLabelRequired = env.MERGE_METHOD_LABEL_REQUIRED === "true";
   const mergeErrorFail = env.MERGE_ERROR_FAIL === "true";
+  const mergeReadyState = parseArray(env.MERGE_READY_STATE, [
+    "clean",
+    "has_hooks",
+    "unknown",
+    "unstable"
+  ]);
 
   const updateLabels = parseMergeLabels(env.UPDATE_LABELS, "automerge");
   const updateMethod = env.UPDATE_METHOD || "merge";
@@ -691,6 +697,7 @@ function createConfig(env = {}) {
     mergeDeleteBranch,
     mergeDeleteBranchFilter,
     mergeErrorFail,
+    mergeReadyState,
     updateLabels,
     updateMethod,
     updateRetries,
@@ -983,7 +990,6 @@ const {
   retry
 } = __nccwpck_require__(6979);
 
-const MAYBE_READY = ["clean", "has_hooks", "unknown", "unstable", "blocked"];
 const NOT_READY = ["dirty", "draft"];
 
 const PR_PROPERTY = new RegExp("{pullRequest.([^}]+)}", "g");
@@ -1253,12 +1259,15 @@ function checkReady(pullRequest, context) {
   if (skipPullRequest(context, pullRequest)) {
     return "failure";
   }
-  return mergeable(pullRequest);
+  return mergeable(pullRequest, context);
 }
 
-function mergeable(pullRequest) {
+function mergeable(pullRequest, context) {
   const { mergeable_state } = pullRequest;
-  if (mergeable_state == null || MAYBE_READY.includes(mergeable_state)) {
+  const {
+    config: { mergeReadyState }
+  } = context;
+  if (mergeable_state == null || mergeReadyState.includes(mergeable_state)) {
     logger.info("PR is probably ready: mergeable_state:", mergeable_state);
     return "success";
   } else if (NOT_READY.includes(mergeable_state)) {

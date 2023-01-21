@@ -272,7 +272,7 @@ test("Base branch not listed then PR is skipped", async () => {
 test("Unmergeable pull request fails action with non-zero exit code", async () => {
   // GIVEN
   const pr = pullRequest();
-  pr.mergeable_state = "behind";
+  pr.mergeable_state = "blocked";
   const config = createConfig({ MERGE_ERROR_FAIL: "true" });
   octokit.pulls.get = async () => ({ data: pr });
 
