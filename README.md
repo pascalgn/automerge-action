@@ -159,6 +159,10 @@ The following merge options are supported:
 - `MERGE_ERROR_FAIL`: Set this to `true` to have the action exit with error code `1`
   when the pull request could not be merged successfully during a run.
 
+- `MERGE_READY_STATE`: The state(s) of a pull request for which to attempt a
+  merge. This option can be a comma-separated list of states that will be considered mergeable.
+  The default value is `clean,has_hooks,unknown,unstable`.
+
 The following update options are supported:
 
 - `UPDATE_LABELS`: The labels that need to be present for a pull request to be

@@ -578,8 +578,8 @@ function createConfig(env = {}) {
     });
   }
 
-  function parseArray(str) {
-    return str ? str.split(",") : [];
+  function parseArray(str, defaultArray = []) {
+    return str ? str.split(",") : defaultArray;
   }
 
   function parseBranches(str, defaultValue) {
@@ -665,6 +665,12 @@ function createConfig(env = {}) {
   const mergeMethodLabels = parseLabelMethods(env.MERGE_METHOD_LABELS);
   const mergeMethodLabelRequired = env.MERGE_METHOD_LABEL_REQUIRED === "true";
   const mergeErrorFail = env.MERGE_ERROR_FAIL === "true";
+  const mergeReadyState = parseArray(env.MERGE_READY_STATE, [
+    "clean",
+    "has_hooks",
+    "unknown",
+    "unstable"
+  ]);
 
   const updateLabels = parseMergeLabels(env.UPDATE_LABELS, "automerge");
   const updateMethod = env.UPDATE_METHOD || "merge";
@@ -691,6 +697,7 @@ function createConfig(env = {}) {
     mergeDeleteBranch,
     mergeDeleteBranchFilter,
     mergeErrorFail,
+    mergeReadyState,
     updateLabels,
     updateMethod,
     updateRetries,
@@ -983,7 +990,6 @@ const {
   retry
 } = __nccwpck_require__(6979);
 
-const MAYBE_READY = ["clean", "has_hooks", "unknown", "unstable"];
 const NOT_READY = ["dirty", "draft"];
 
 const PR_PROPERTY = new RegExp("{pullRequest.([^}]+)}", "g");
@@ -1253,12 +1259,15 @@ function checkReady(pullRequest, context) {
   if (skipPullRequest(context, pullRequest)) {
     return "failure";
   }
-  return mergeable(pullRequest);
+  return mergeable(pullRequest, context);
 }
 
-function mergeable(pullRequest) {
+function mergeable(pullRequest, context) {
   const { mergeable_state } = pullRequest;
-  if (mergeable_state == null || MAYBE_READY.includes(mergeable_state)) {
+  const {
+    config: { mergeReadyState }
+  } = context;
+  if (mergeable_state == null || mergeReadyState.includes(mergeable_state)) {
     logger.info("PR is probably ready: mergeable_state:", mergeable_state);
     return "success";
   } else if (NOT_READY.includes(mergeable_state)) {
@@ -23227,7 +23236,7 @@ module.exports = JSON.parse('[[[0,44],"disallowed_STD3_valid"],[[45,46],"valid"]
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"automerge-action","version":"0.15.4","description":"GitHub action to automatically merge pull requests","main":"lib/api.js","author":"Pascal","license":"MIT","private":true,"bin":{"automerge-action":"./bin/automerge.js"},"scripts":{"test":"jest","it":"node it/it.js","lint":"prettier -l lib/** test/** && eslint .","compile":"ncc build bin/automerge.js --license LICENSE -o dist","prepublish":"yarn lint && yarn test && yarn compile"},"dependencies":{"@actions/core":"^1.10.0","@octokit/rest":"^19.0.5","argparse":"^2.0.1","fs-extra":"^10.1.0","object-resolve-path":"^1.1.1","tmp":"^0.2.1"},"devDependencies":{"@vercel/ncc":"^0.34.0","dotenv":"^16.0.3","eslint":"^8.25.0","eslint-plugin-jest":"^27.1.2","jest":"^29.2.0","prettier":"^2.7.1"},"prettier":{"trailingComma":"none","arrowParens":"avoid"}}');
+module.exports = JSON.parse('{"name":"automerge-action","version":"0.15.5","description":"GitHub action to automatically merge pull requests","main":"lib/api.js","author":"Pascal","license":"MIT","private":true,"bin":{"automerge-action":"./bin/automerge.js"},"scripts":{"test":"jest","it":"node it/it.js","lint":"prettier -l lib/** test/** && eslint .","compile":"ncc build bin/automerge.js --license LICENSE -o dist","prepublish":"yarn lint && yarn test && yarn compile"},"dependencies":{"@actions/core":"^1.10.0","@octokit/rest":"^19.0.5","argparse":"^2.0.1","fs-extra":"^10.1.0","object-resolve-path":"^1.1.1","tmp":"^0.2.1"},"devDependencies":{"@vercel/ncc":"^0.34.0","dotenv":"^16.0.3","eslint":"^8.25.0","eslint-plugin-jest":"^27.1.2","jest":"^29.2.0","prettier":"^2.7.1"},"prettier":{"trailingComma":"none","arrowParens":"avoid"}}');
 
 /***/ })
 
