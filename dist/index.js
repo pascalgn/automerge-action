@@ -805,9 +805,9 @@ const FETCH_DEPTH = 10;
 
 const COMMON_ARGS = [
   "-c",
-  "user.name=GitHub",
+  "user.name=auto-merge[bot]",
   "-c",
-  "user.email=noreply@github.com"
+  "user.email=3579+auto-merge[bot]@users.noreply.github.mlbam.net"
 ];
 
 function git(cwd, ...args) {
