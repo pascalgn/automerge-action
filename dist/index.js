@@ -1441,7 +1441,7 @@ async function update(context, pullRequest) {
   const {
     token,
     octokit,
-    config: { updateMethod, updateRetries, updateRetrySleep }
+    config: { updateMethod, updateRetries, updateRetrySleep, hostname }
   } = context;
 
   let newSha;
@@ -1450,7 +1450,7 @@ async function update(context, pullRequest) {
     newSha = await merge(octokit, updateRetries, updateRetrySleep, pullRequest);
   } else if (updateMethod === "rebase") {
     const { full_name } = head.repo;
-    const url = `https://x-access-token:${token}@github.com/${full_name}.git`;
+    const url = `https://x-access-token:${token}@${hostname}/${full_name}.git`;
     newSha = await tmpdir(path => rebase(path, url, pullRequest));
   } else {
     throw new Error(`invalid update method: ${updateMethod}`);
