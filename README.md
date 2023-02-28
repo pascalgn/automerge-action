@@ -209,6 +209,8 @@ Also, the following general options are supported:
   so make sure to add it as secret, not as environment variable, in the GitHub
   workflow file!
 
+- `GHE_HOSTNAME`: If provided, the action can be used with GitHub Enterprise Server (GHES) instead of github.com. For example, `github.company.com`. HTTPS is assumed, as is the API endpoint at `/api/v3`.
+
 - `PULL_REQUEST`: If provided, this action will attempt to merge the specified pull request. By default, it will attempt to use the pull request specified in the GitHub context. If a pull request number is provided via this input, this action will search in the current repo for the provided pull request number. If you want to merge a pull request in another repo, just provide the repo slug before the pull request number, like `Some-Org/Some-Repo/1234`
 
 - `BASE_BRANCHES`: If provided, the action will be restricted in terms of base branches. Can be comma-separated list of simple branch names (i.e `main,dev`).
