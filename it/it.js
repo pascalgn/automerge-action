@@ -22,7 +22,8 @@ async function main() {
     MERGE_REMOVE_LABELS: "it-merge",
     MERGE_RETRIES: "3",
     MERGE_RETRY_SLEEP: "2000",
-    MERGE_ERROR_FAIL: "true"
+    MERGE_ERROR_FAIL: "true",
+    GHE_HOSTNAME: process.env.GHE_HOSTNAME
   });
 
   const context = { token, octokit, config };
