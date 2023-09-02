@@ -31,7 +31,7 @@ see [automatic deletion of branches](https://help.github.com/en/articles/managin
 
 ----
 
-**This functionality is now available directly in GitHub as [auto-merge](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/automatically-merging-a-pull-request).** Note that GitHub does not currently support auto-rebasing pull requests. The automerge-action project will still be maintained, but users are encouraged to switch to auto-merge for simple workflows, as it offers a faster and more stable experience.
+**This functionality is now available directly in GitHub as [auto-merge](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/automatically-merging-a-pull-request).** GitHub also offers a [how-to](https://docs.github.com/en/code-security/dependabot/working-with-dependabot/automating-dependabot-with-github-actions#enable-auto-merge-on-a-pull-request) based on the [`gh` tool](https://github.com/cli/cli#github-cli), which also can target the merge queue. -- Note that with a merge queue, GitHub  supports auto-rebasing pull requests. When there is no merge queue, there `gh pr` does not support rebasing before the checks. The automerge-action project will still be maintained, but users are encouraged to switch to auto-merge for simple workflows, as it offers a faster and more stable experience.
 
 ## Usage
 
