@@ -21,6 +21,8 @@ const OLD_CONFIG = [
   "TOKEN"
 ];
 
+const GITHUB_SERVER_URL = process.env.GITHUB_SERVER_URL;
+
 async function main() {
   const parser = new ArgumentParser({
     prog: pkg.name,
@@ -53,6 +55,7 @@ async function main() {
   const token = env("GITHUB_TOKEN");
 
   const octokit = new Octokit({
+    baseUrl: GITHUB_SERVER_URL,
     auth: `token ${token}`,
     userAgent: "pascalgn/automerge-action"
   });
