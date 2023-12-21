@@ -273,7 +273,7 @@ Example usage:
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
       - name: feedback
-        if: steps.automerge.outputs.mergeResult == "merged"
+        if: ${{ steps.automerge.outputs.mergeResult == 'merged' }}
         run: |
           echo "Pull request ${{ steps.automerge.outputs.pullRequestNumber }} merged!"
 ```
