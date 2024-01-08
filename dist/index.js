@@ -19,8 +19,11 @@ const { update } = __nccwpck_require__(3056);
 const { merge } = __nccwpck_require__(452);
 const { branchName } = __nccwpck_require__(4024);
 
-const URL_REGEXP =
-  /^https:\/\/github.com\/([^/]+)\/([^/]+)\/(pull|tree)\/([^ ]+)$/;
+const GITHUB_SERVER_URL = process.env.GITHUB_SERVER_URL || "https://github.com";
+
+const URL_REGEXP = new RegExp(
+  `^${GITHUB_SERVER_URL}/([^/]+)/([^/]+)/(pull|tree)/([^ ]+)$`
+);
 
 const RELEVANT_ACTIONS = [
   "labeled",
@@ -22949,7 +22952,7 @@ module.exports = JSON.parse('[[[0,44],"disallowed_STD3_valid"],[[45,46],"valid"]
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"automerge-action","version":"0.15.5","description":"GitHub action to automatically merge pull requests","main":"lib/api.js","author":"Pascal","license":"MIT","private":true,"bin":{"automerge-action":"./bin/automerge.js"},"scripts":{"test":"jest","it":"node it/it.js","lint":"prettier -l lib/** test/** && eslint .","compile":"ncc build bin/automerge.js --license LICENSE -o dist","prepublish":"yarn lint && yarn test && yarn compile"},"dependencies":{"@actions/core":"^1.10.0","@octokit/rest":"^19.0.7","argparse":"^2.0.1","fs-extra":"^11.1.0","object-resolve-path":"^1.1.1","tmp":"^0.2.1"},"devDependencies":{"@vercel/ncc":"^0.36.1","dotenv":"^16.0.3","eslint":"^8.34.0","eslint-plugin-jest":"^27.2.1","jest":"^29.4.3","prettier":"^2.8.4"},"prettier":{"trailingComma":"none","arrowParens":"avoid"}}');
+module.exports = JSON.parse('{"name":"automerge-action","version":"0.15.6","description":"GitHub action to automatically merge pull requests","main":"lib/api.js","author":"Pascal","license":"MIT","private":true,"bin":{"automerge-action":"./bin/automerge.js"},"scripts":{"test":"jest","it":"node it/it.js","lint":"prettier -l lib/** test/** && eslint .","compile":"ncc build bin/automerge.js --license LICENSE -o dist","prepublish":"yarn lint && yarn test && yarn compile"},"dependencies":{"@actions/core":"^1.10.0","@octokit/rest":"^19.0.7","argparse":"^2.0.1","fs-extra":"^11.1.0","object-resolve-path":"^1.1.1","tmp":"^0.2.1"},"devDependencies":{"@vercel/ncc":"^0.36.1","dotenv":"^16.0.3","eslint":"^8.34.0","eslint-plugin-jest":"^27.2.1","jest":"^29.4.3","prettier":"^2.8.4"},"prettier":{"trailingComma":"none","arrowParens":"avoid"}}');
 
 /***/ })
 
@@ -23016,6 +23019,8 @@ const OLD_CONFIG = [
   "TOKEN"
 ];
 
+const GITHUB_SERVER_URL = process.env.GITHUB_SERVER_URL;
+
 async function main() {
   const parser = new ArgumentParser({
     prog: pkg.name,
@@ -23048,6 +23053,7 @@ async function main() {
   const token = env("GITHUB_TOKEN");
 
   const octokit = new Octokit({
+    baseUrl: GITHUB_SERVER_URL,
     auth: `token ${token}`,
     userAgent: "pascalgn/automerge-action"
   });
