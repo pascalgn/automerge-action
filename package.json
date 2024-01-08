@@ -13,7 +13,6 @@
     "test": "jest",
     "it": "node it/it.js",
     "lint": "prettier -l lib/** test/** && eslint .",
-    "lint:fix": "prettier --write -l lib/** test/** && eslint --fix .",
     "compile": "ncc build bin/automerge.js --license LICENSE -o dist",
     "prepublish": "yarn lint && yarn test && yarn compile"
   },
