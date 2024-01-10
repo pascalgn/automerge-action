@@ -44089,7 +44089,7 @@ module.exports = parseParams
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"automerge-action","version":"0.15.6","description":"GitHub action to automatically merge pull requests","main":"lib/api.js","author":"Pascal","license":"MIT","private":true,"bin":{"automerge-action":"./bin/automerge.js"},"scripts":{"test":"jest","it":"node it/it.js","lint":"prettier -l lib/** test/** && eslint .","compile":"ncc build bin/automerge.js --license LICENSE -o dist","prepublish":"yarn lint && yarn test && yarn compile"},"dependencies":{"@actions/core":"^1.10.1","@octokit/rest":"^20.0.2","argparse":"^2.0.1","fs-extra":"^11.2.0","object-resolve-path":"^1.1.1","tmp":"^0.2.1"},"devDependencies":{"@vercel/ncc":"^0.38.1","dotenv":"^16.3.1","eslint":"^8.56.0","eslint-plugin-jest":"^27.6.1","jest":"^29.7.0","prettier":"^3.1.1"},"prettier":{"trailingComma":"none","arrowParens":"avoid"}}');
+module.exports = JSON.parse('{"name":"automerge-action","version":"0.16.1","description":"GitHub action to automatically merge pull requests","main":"lib/api.js","author":"Pascal","license":"MIT","private":true,"bin":{"automerge-action":"./bin/automerge.js"},"scripts":{"test":"jest","it":"node it/it.js","lint":"prettier -l lib/** test/** && eslint .","compile":"ncc build bin/automerge.js --license LICENSE -o dist","prepublish":"yarn lint && yarn test && yarn compile"},"dependencies":{"@actions/core":"^1.10.1","@octokit/rest":"^20.0.2","argparse":"^2.0.1","fs-extra":"^11.2.0","object-resolve-path":"^1.1.1","tmp":"^0.2.1"},"devDependencies":{"@vercel/ncc":"^0.38.1","dotenv":"^16.3.1","eslint":"^8.56.0","eslint-plugin-jest":"^27.6.1","jest":"^29.7.0","prettier":"^3.1.1"},"prettier":{"trailingComma":"none","arrowParens":"avoid"}}');
 
 /***/ })
 
