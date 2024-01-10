@@ -9,6 +9,7 @@ async function main() {
   const token = process.env.GITHUB_TOKEN;
 
   const octokit = new Octokit({
+    baseUrl: "https://api.github.com",
     auth: `token ${token}`,
     userAgent: "pascalgn/automerge-action-it"
   });
