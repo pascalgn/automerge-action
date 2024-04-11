@@ -57,6 +57,8 @@ on:
     types:
       - completed
   status: {}
+permissions:
+  contents: write
 jobs:
   automerge:
     runs-on: ubuntu-latest
