@@ -57,8 +57,6 @@ on:
     types:
       - completed
   status: {}
-permissions:
-  contents: write
 jobs:
   automerge:
     runs-on: ubuntu-latest
@@ -66,6 +64,8 @@ jobs:
       - id: automerge
         name: automerge
         uses: "pascalgn/automerge-action@v0.16.2"
+        permissions:
+          contents: write
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 ```
