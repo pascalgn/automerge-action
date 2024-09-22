@@ -60,15 +60,15 @@ on:
 jobs:
   automerge:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: read
     steps:
       - id: automerge
         name: automerge
         uses: "pascalgn/automerge-action@v0.16.3"
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-    permissions:
-      contents: write
-      pull-requests: read
 ```
 
 For the latest version, see the [list of releases](https://github.com/pascalgn/automerge-action/releases).
