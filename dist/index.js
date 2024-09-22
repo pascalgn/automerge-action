@@ -37,7 +37,7 @@ const RELEVANT_ACTIONS = [
 ];
 
 // we'll only update a few PRs at once:
-const MAX_PR_COUNT = 10;
+const MAX_PR_COUNT = process.env.MAX_PR_COUNT || 10;
 
 async function executeLocally(context, url) {
   const { octokit } = context;
@@ -40705,7 +40705,7 @@ module.exports = parseParams
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"automerge-action","version":"0.16.2","description":"GitHub action to automatically merge pull requests","main":"lib/api.js","author":"Pascal","license":"MIT","private":true,"bin":{"automerge-action":"./bin/automerge.js"},"scripts":{"test":"jest","it":"node it/it.js","lint":"prettier -l lib/** test/** && eslint .","compile":"ncc build bin/automerge.js --license LICENSE -o dist","prepublish":"yarn lint && yarn test && yarn compile"},"dependencies":{"@actions/core":"^1.10.1","@octokit/rest":"^20.1.0","argparse":"^2.0.1","fs-extra":"^11.2.0","object-resolve-path":"^1.1.1","tmp":"^0.2.3"},"devDependencies":{"@vercel/ncc":"^0.38.1","dotenv":"^16.4.5","eslint":"^9.0.0","eslint-plugin-jest":"^28.2.0","globals":"^15.0.0","jest":"^29.7.0","prettier":"^3.2.5"},"prettier":{"trailingComma":"none","arrowParens":"avoid"}}');
+module.exports = JSON.parse('{"name":"automerge-action","version":"0.16.3","description":"GitHub action to automatically merge pull requests","main":"lib/api.js","author":"Pascal","license":"MIT","private":true,"bin":{"automerge-action":"./bin/automerge.js"},"scripts":{"test":"jest","it":"node it/it.js","lint":"prettier -l lib/** test/** && eslint .","compile":"ncc build bin/automerge.js --license LICENSE -o dist","prepublish":"yarn lint && yarn test && yarn compile"},"dependencies":{"@actions/core":"^1.10.1","@octokit/rest":"^20.1.0","argparse":"^2.0.1","fs-extra":"^11.2.0","object-resolve-path":"^1.1.1","tmp":"^0.2.3"},"devDependencies":{"@vercel/ncc":"^0.38.1","dotenv":"^16.4.5","eslint":"^9.0.0","eslint-plugin-jest":"^28.2.0","globals":"^15.0.0","jest":"^29.7.0","prettier":"^3.2.5"},"prettier":{"trailingComma":"none","arrowParens":"avoid"}}');
 
 /***/ })
 

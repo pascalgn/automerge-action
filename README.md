@@ -215,6 +215,8 @@ Also, the following general options are supported:
 
 - `BASE_BRANCHES`: If provided, the action will be restricted in terms of base branches. Can be comma-separated list of simple branch names (i.e `main,dev`).
 
+- `MAX_PR_COUNT`: If provided, will control how many GitHub pull requests are considered in a single run. The default is `10`.
+
 You can configure the environment variables in the workflow file like this:
 
 ```yaml
@@ -231,6 +233,7 @@ You can configure the environment variables in the workflow file like this:
           UPDATE_LABELS: ""
           UPDATE_METHOD: "rebase"
           PULL_REQUEST: "1234"
+          MAX_PR_COUNT: "25"
 ```
 
 ## Supported Events
