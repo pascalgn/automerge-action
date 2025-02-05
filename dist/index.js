@@ -1,5 +1,4 @@
-#!/usr/bin/env node
-/******/ (() => { // webpackBootstrap
+#!/usr/bin/env node/******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
 /***/ 8947:
@@ -101,7 +100,7 @@ async function executeGitHubActionImpl(context, eventName, eventData) {
   if (context.config.pullRequest != null) {
     return await handleArbitraryPullRequestUpdate(context, eventData);
   } else if (["push"].includes(eventName)) {
-    await handleBaseBranchUpdate(context, eventName, eventData);
+    return await handleBaseBranchUpdate(context, eventName, eventData);
   } else if (["status"].includes(eventName)) {
     return await handleStatusUpdate(context, eventName, eventData);
   } else if (["pull_request", "pull_request_target"].includes(eventName)) {
@@ -40750,6 +40749,7 @@ module.exports = JSON.parse('{"name":"automerge-action","version":"0.16.3","desc
 var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
 (() => {
+
 
 const process = __nccwpck_require__(7282);
 
