@@ -1,0 +1,38 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+
+  "extends": [
+    "config:recommended",
+    "helpers:pinGitHubActionDigests"
+  ],
+
+  "enabledManagers": [
+    "npm",
+    "github-actions",
+    "pre-commit"
+  ],
+
+  "pre-commit": {
+    "enabled": true
+  },
+
+  "dependencyDashboard": true,
+
+  "labels": [
+    "dependencies"
+  ],
+
+  "packageRules": [
+    {
+      "description": "Automerge non-major dependency updates",
+      "matchUpdateTypes": [
+        "patch",
+        "minor",
+        "digest"
+      ],
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": false
+    }
+  ]
+}
